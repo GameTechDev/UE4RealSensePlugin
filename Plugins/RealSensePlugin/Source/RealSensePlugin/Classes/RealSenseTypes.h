@@ -1,0 +1,196 @@
+#pragma once
+
+#include "PXCImage.h"
+#include "RealSenseTypes.generated.h"
+
+// List of features provided by the RealSense SDK
+enum RealSenseFeature : uint32 {
+	CAMERA_STREAMING = 0x1,
+	SCAN_3D = 0x2,
+	SCENE_PERCEPTION = 0x4,
+};
+
+// Resolutions supported by the RealSense RGB camera
+UENUM(BlueprintType) enum class EColorResolution : uint8 {
+	UNDEFINED = 0 UMETA(DisplayName = " "),
+	RES1 = 1 UMETA(DisplayName = "1920 x 1080 x 30"),
+	RES2 = 2 UMETA(DisplayName = "1280 x 720 x 30"),
+	RES3 = 3 UMETA(DisplayName = "640 x 480 x 60"),
+	RES4 = 4 UMETA(DisplayName = "640 x 480 x 30"),
+	RES5 = 5 UMETA(DisplayName = "320 x 240 x 60"),
+	RES6 = 6 UMETA(DisplayName = "320 x 240 x 30"),
+};
+
+// Resolutions supported by the RealSense depth camera
+// (F200) denotes that this resolution is only supported by the F200 camera.
+// (R200) denotes that this resolution is only supported by the R200 camera.
+UENUM(BlueprintType) enum class EDepthResolution : uint8 {
+	UNDEFINED = 0 UMETA(DisplayName = " "),
+	RES1 = 1 UMETA(DisplayName = "640 x 480 x 60 (F200)"),
+	RES2 = 2 UMETA(DisplayName = "640 x 480 x 30 (F200)"),
+	RES3 = 3 UMETA(DisplayName = "628 x 468 x 90 (R200)"),
+	RES4 = 4 UMETA(DisplayName = "628 x 468 x 60 (R200)"),
+	RES5 = 5 UMETA(DisplayName = "628 x 468 x 30 (R200)"),
+	RES6 = 6 UMETA(DisplayName = "480 x 360 x 90 (R200)"),
+	RES7 = 7 UMETA(DisplayName = "480 x 360 x 60 (R200)"),
+	RES8 = 8 UMETA(DisplayName = "480 x 360 x 30 (R200)"),
+	RES9 = 9 UMETA(DisplayName = "320 x 240 x 90 (R200)"),
+	RES10 = 10 UMETA(DisplayName = "320 x 240 x 60 (R200)"),
+	RES11 = 11 UMETA(DisplayName = "320 x 240 x 30 (R200)"),
+};
+
+// RSSDK Pixel Format exposed to Blueprint (see pxcimage.h)
+UENUM(BlueprintType) enum class ERealSensePixelFormat : uint8 {
+	PIXEL_FORMAT_ANY = 0,  // Unknown/undefined
+	COLOR_RGB24,    // BGR layout
+	COLOR_RGB32,    // BGRA layout
+	COLOR_Y8,       // 8-Bit Grayscale
+	COLOR_YUY2,
+	COLOR_NV12,
+	DEPTH_G16_MM,   // 16-bit unsigned integer with precision mm.
+	DEPTH_G16_RAW,  // 16-bit unsigned integer with device specific precision (call device->QueryDepthUnit()) */
+	DEPTH_F32_MM,   // 32-bit float-point with precision mm. */
+	IR_Y16,         // 16-Bit Grayscale
+	IR_RELATIVE_Y8  // Relative IR Image
+};
+
+// Supported RealSense camera models
+UENUM(BlueprintType) enum class ECameraModel : uint8 {
+	None = 0 UMETA(DisplayName = " "),
+	F200 = 1 UMETA(DisplayName = "Front-Facing (F200)"),
+	SR300 = 2 UMETA(DisplayName = "Short-Range (SR300)"),
+	R200 = 3 UMETA(DisplayName = "World-Facing (R200)"),
+	Other = 4 UMETA(DisplayName = "Unknown Camera Model")
+};
+
+// Supported modes for the 3D Scanning middleware
+UENUM(BlueprintType) enum class EScan3DMode : uint8 {
+	OBJECT = 0 UMETA(DisplayName = "Object"),
+	FACE = 1 UMETA(DisplayName = "Face")
+//	HEAD = 3 UMETA(DisplayName = "Head"),
+//	BODY = 4 UMETA(DisplayName = "Body")
+//	VARIABLE = 0 UMETA(DisplayName = "Variable"),
+};
+
+// File types supported by the 3D Scanning middleware for saving scans 
+UENUM(BlueprintType) enum class EScan3DFileFormat : uint8 {
+	OBJ = 0 UMETA(DisplayName = "OBJ"),
+//	PLY = 1 UMETA(DisplayName = "PLY"),
+//	STL = 2 UMETA(DisplayName = "STL")
+};
+
+// Basic 32-bit color structure (RGBA) 
+USTRUCT(BlueprintType) struct FSimpleColor
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 R;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 G;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 B;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 A;
+};
+
+// Resolution of a RealSense camera stream
+USTRUCT(BlueprintType) struct FStreamResolution
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 width;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 height;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float fps;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ERealSensePixelFormat format;
+};
+
+UENUM(BlueprintType) enum class FaceStatusDetected : uint8
+{
+	Detected,
+	NotDetected,
+	Undefined
+};
+
+UENUM(BlueprintType) enum class FaceStatusXAxis : uint8
+{
+	InRange,
+	TooFarLeft,
+	TooFarRight,
+	Undefined
+};
+
+UENUM(BlueprintType) enum class FaceStatusYAxis : uint8
+{
+	InRange,
+	TooFarUp,
+	TooFarDown,
+	Undefined
+};
+
+UENUM(BlueprintType) enum class FaceStatusZAxis : uint8
+{
+	InRange,
+	TooClose,
+	TooFar,
+	Undefined
+};
+
+UENUM(BlueprintType) enum class FaceStatusYaw : uint8
+{
+	InRange,
+	TooFarLeft,
+	TooFarRight,
+	Undefined
+};
+
+UENUM(BlueprintType) enum class FaceStatusPitch : uint8
+{
+	InRange,
+	TooFarUp,
+	TooFarDown,
+	Undefined
+};
+
+// Convenient structure for storing the "center" of a plane 
+// along with the plane equation
+USTRUCT(BlueprintType) struct FTrackedPlane
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPlane equation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector center;
+};
+
+USTRUCT(BlueprintType) struct FFacePrerequisites
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusDetected FaceDetected = { FaceStatusDetected::Undefined };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusXAxis XInRange = { FaceStatusXAxis::Undefined };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusYAxis YInRange = { FaceStatusYAxis::Undefined };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusZAxis ZInRange = { FaceStatusZAxis::Undefined };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusPitch PitchInRange = { FaceStatusPitch::Undefined };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FaceStatusYaw YawInRange = { FaceStatusYaw::Undefined };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Satisfied = { false };
+};

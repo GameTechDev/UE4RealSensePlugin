@@ -1,0 +1,21 @@
+{
+    "FileVersion" : 3,
+	
+	"FriendlyName" : "Intel(R) RealSense(TM) Plugin",
+	"Version" : 1,
+	"VersionName" : "0.1",
+	"CreatedBy" : "Intel Corporation",
+	"CreatedByURL" : "http://www.intel.com",
+	"EngineVersion" : 1579795,
+	"Description" : "Support for Intel(R) RealSense(TM) Technology",
+	"Category" : "RealSense",
+	"CanContainContent" : true,
+	
+    "Modules" :
+	[
+		{
+			"Name" : "RealSensePlugin",
+			"Type" : "Runtime"
+		}
+	]
+}
