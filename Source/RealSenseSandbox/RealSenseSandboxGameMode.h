@@ -11,9 +11,5 @@
 UCLASS()
 class REALSENSESANDBOX_API ARealSenseSandboxGameMode : public AGameMode
 {
-	GENERATED_BODY()
-	
-	
-	
-	
+	GENERATED_BODY()	
 };

@@ -30,6 +30,9 @@ RealSenseImpl::RealSenseImpl()
 	desc1.group = PXCSession::IMPL_GROUP_SENSOR;
 	desc1.subgroup = PXCSession::IMPL_SUBGROUP_VIDEO_CAPTURE;
 	for (int m = 0; ; m++) {
+		if (device)
+			break;
+
 		PXCSession::ImplDesc desc2 = {};
 		if (session->QueryImpl(&desc1, m, &desc2) != PXC_STATUS_NO_ERROR) 
 			break;

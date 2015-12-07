@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace UnrealBuildTool.Rules 
@@ -13,8 +14,15 @@ namespace UnrealBuildTool.Rules
             PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore" });
 
             PrivateIncludePaths.AddRange(new string[] { "RealSensePlugin/Private" });
-            PublicIncludePaths.Add("C:\\Program Files (x86)\\Intel\\RSSDK\\include");
-            PublicAdditionalLibraries.Add("C:\\Program Files (x86)\\Intel\\RSSDK\\lib\\x64\\libpxc.lib");
+
+            string RealSenseDirectory = Environment.GetEnvironmentVariable("RSSDK_DIR");
+            string RealSenseIncludeDirectory = RealSenseDirectory + "include";
+            string RealSenseLibrary32Directory = RealSenseDirectory + "lib\\Win32\\libpxc.lib";
+            string RealSenseLibrary64Directory = RealSenseDirectory + "lib\\x64\\libpxc.lib";
+
+            PublicIncludePaths.Add(RealSenseIncludeDirectory);
+            PublicAdditionalLibraries.Add(RealSenseLibrary32Directory);
+            PublicAdditionalLibraries.Add(RealSenseLibrary64Directory);
         }
 	}
 }
