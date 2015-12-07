@@ -60,7 +60,6 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 	// StartScanning() to know when the scanning process has begun.
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") bool IsScanning();
 
-	// Default constructor
 	UScan3DComponent();
 
 	// Adds the SCAN_3D feature to the RealSenseSessionManager and initializes the ScanTexture object.

@@ -26,8 +26,9 @@ void UScan3DComponent::BeginPlay()
 // If it has, the OnScanComplete event is broadcast.
 void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) 
 {
-	if (globalRealSenseSession->IsCameraRunning() == false)
+	if (globalRealSenseSession->IsCameraRunning() == false) {
 		return;
+	}
 
 	// The 3D Scanning preview image size can be changed automatically by the
 	// middleware, so it is important to check every tick if the image size
@@ -49,7 +50,7 @@ void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 
 void UScan3DComponent::ConfigureScanning(EScan3DMode ScanningMode, bool Solidify)
 {
-	globalRealSenseSession->ConfigureScanning(ScanningMode, Solidify, true);
+	globalRealSenseSession->ConfigureScanning(ScanningMode, Solidify, false);
 }
 
 void UScan3DComponent::StartScanning()

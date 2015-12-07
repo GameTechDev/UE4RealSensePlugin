@@ -6,7 +6,6 @@
 #include "RealSenseSessionManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRealSenseNullaryDelegate);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FRealSenseReconstructedMeshDelegate, int32, PieceID, URuntimeMesh*, Mesh);
 
 UCLASS(ClassGroup = RealSense)
 class ARealSenseSessionManager : public AActor
@@ -16,9 +15,7 @@ class ARealSenseSessionManager : public AActor
 	// Adds a new feature to the RealSense feature set
 	void AddRealSenseFeature(RealSenseFeature feature);
 
-	/* 
-	 * RealSenseComponent Support
-	 */
+	// RealSenseComponent Support
 
 	// Starts the camera processing thread.
 	void StartCamera();
@@ -27,70 +24,66 @@ class ARealSenseSessionManager : public AActor
 	void StopCamera();
 
 	// Returns true if the camera processing thread is currently executing.
-	bool IsCameraRunning();
+	bool IsCameraRunning() const;
 
 	// Returns true if there is a physical camera connected.
-	bool IsCameraConnected();
+	bool IsCameraConnected() const;
 
 	// Returns the horizontal field of view of the RealSense RGB camera.
-	const float GetColorHorizontalFOV();
+	const float GetColorHorizontalFOV() const;
 
 	// Returns the vertical field of view of the RealSense RGB camera.
-	const float GetColorVerticalFOV();
+	const float GetColorVerticalFOV() const;
 
 	// Returns the horizontal field of view of the RealSense depth camera.
-	const float GetDepthHorizontalFOV();
+	const float GetDepthHorizontalFOV() const;
 
 	// Returns the vertical field of view of the RealSense depth camera.
-	const float GetDepthVerticalFOV();
+	const float GetDepthVerticalFOV() const;
 
 	// Returns the model of the connected camera: R200, F200, or Other.
-	const ECameraModel GetCameraModel();
+	const ECameraModel GetCameraModel() const;
 
 	// Returns the connected camera's firmware version as a human readable string.
-	const FString GetCameraFirmware();
+	const FString GetCameraFirmware() const;
 
 	// Returns the user-defined resolution of the RealSense RGB camera.
-	FStreamResolution GetColorCameraResolution();
+	FStreamResolution GetColorCameraResolution() const;
 
 	// Returns the width of the user-defined resolution of the RealSense RGB camera.
-	const int GetColorImageWidth();
+	int GetColorImageWidth() const;
 
 	// Returns the height of the user-defined resolution of the RealSense RGB camera.
-	const int GetColorImageHeight();
+	int GetColorImageHeight() const;
 
 	// Set the resolution to be used by the RealSense RGB camera.
 	void SetColorCameraResolution(EColorResolution resolution);
 
 	// Returns the user-defined resolution of the RealSense depth camera.
-	FStreamResolution GetDepthCameraResolution();
+	FStreamResolution GetDepthCameraResolution() const;
 
 	// Returns the width of the user-defined resolution of the RealSense depth camera.
-	const int GetDepthImageWidth();
+	int GetDepthImageWidth() const;
 
 	// Returns the height of the user-defined resolution of the RealSense depth camera.
-	const int GetDepthImageHeight();
+	int GetDepthImageHeight() const;
 
 	// Set the resolution to be used by the RealSense depth camera.
 	void SetDepthCameraResolution(EDepthResolution resolution);
 
 	// Returns true if the combination of RGB camera resolution and depth camera 
 	// resolution is valid. Validity is determined internally by the RSSDK.
-	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution);
+	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) const;
 
-	/* 
-	 * CameraStreamComponent Support
-	 */
+	// CameraStreamComponent Support
 
 	// Returns a pointer to the latest frame obtained from the RealSense RGB camera.
-	TArray<FSimpleColor> GetColorBuffer();
+	TArray<FSimpleColor> GetColorBuffer() const;
 
 	// Returns a pointer to the latest frame obtained from the RealSense depth camera.
-	TArray<int32> GetDepthBuffer();
+	TArray<int32> GetDepthBuffer() const;
 
-	/* 
-	 * Scan3DComponent Support
-	 */ 
+	// Scan3DComponent Support 
 
 	// Configures the 3D Scanning middleware.
 	//
@@ -131,28 +124,28 @@ class ARealSenseSessionManager : public AActor
 	void LoadScan(FString filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);
 
 	// Returns true if the 3D scanning module is currently scanning.
-	bool IsScanning();
+	bool IsScanning() const;
 
 	// Returns the middleware-defined resolution used by the 3D scanning module.
-	FStreamResolution GetScan3DResolution();
+	FStreamResolution GetScan3DResolution() const;
 
 	// Returns the width of the middleware-defined resolution used by the 
 	// 3D scanning module.
-	const int GetScan3DImageWidth();
+	int GetScan3DImageWidth() const;
 
 	// Returns the height of the middleware-defined resolution used by the 
 	// 3D scanning module.
-	const int GetScan3DImageHeight();
+	int GetScan3DImageHeight() const;
 
 	// Returns a pointer to the latest frame obtained from the 3D scanning
 	// module, representing a preview of the current scanning progress.
-	TArray<FSimpleColor> GetScanBuffer();
+	TArray<FSimpleColor> GetScanBuffer() const;
 
 	// Returns true if the resolution of the 3D scanning module has changed.
 	bool HasScan3DImageSizeChanged();
 
 	// Returns true when the 3D scanning module finishes saving a scan.
-	bool HasScanCompleted();
+	bool HasScanCompleted() const;
 
 	// Creates a new RealSenseImpl object to handle the RealSense implementation
 	ARealSenseSessionManager();

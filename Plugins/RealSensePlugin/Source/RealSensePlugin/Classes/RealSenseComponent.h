@@ -62,7 +62,6 @@ UCLASS() class URealSenseComponent : public UActorComponent
 	// there will be no errors initializing the RealSense camera processing thread.
 	UFUNCTION(BlueprintCallable, Category = "RealSense") bool IsStreamSetValid(EColorResolution CResolution, EDepthResolution DResolution);
 	
-	// Default constructor
 	URealSenseComponent();
 
 	// When initialized, this component will check if a RealSenseSessionManager actor exists in the scene.

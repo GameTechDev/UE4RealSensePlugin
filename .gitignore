@@ -2,6 +2,7 @@ Binaries/
 Build/
 Intermediate/
 Saved/
+Content/StarterContent
 
 *.sdf
 *.sln

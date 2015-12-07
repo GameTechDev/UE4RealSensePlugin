@@ -24,8 +24,9 @@ void ARealSenseSessionManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (impl->IsCameraThreadRunning() == false)
+	if (impl->IsCameraThreadRunning() == false) {
 		return;
+	}
 
 	// Grab the next frame of RealSense data
 	impl->SwapFrames();
@@ -45,7 +46,9 @@ void ARealSenseSessionManager::Tick(float DeltaTime)
 			ScanBuffer.SetNumUninitialized(impl->GetScan3DImageWidth() * impl->GetScan3DImageHeight());
 	
 		// Update the ScanBuffer
-		FMemory::Memcpy(ScanBuffer.GetData(), impl->GetScanBuffer(), impl->GetScan3DImageWidth() * impl->GetScan3DImageHeight() * 4);
+		if (ScanBuffer.Num() == impl->GetScan3DImageWidth() * impl->GetScan3DImageHeight()) {
+			FMemory::Memcpy(ScanBuffer.GetData(), impl->GetScanBuffer(), impl->GetScan3DImageWidth() * impl->GetScan3DImageHeight() * 4);
+		}
 	}
 }
 
@@ -58,12 +61,12 @@ void ARealSenseSessionManager::AddRealSenseFeature(RealSenseFeature feature)
 	RealSenseFeatureSet |= feature;
 }
 
-bool ARealSenseSessionManager::IsCameraConnected() 
+bool ARealSenseSessionManager::IsCameraConnected() const
 { 
 	return impl->IsCameraConnected(); 
 }
 
-bool ARealSenseSessionManager::IsCameraRunning()
+bool ARealSenseSessionManager::IsCameraRunning() const
 {
 	return impl->IsCameraThreadRunning();
 }
@@ -78,62 +81,62 @@ void ARealSenseSessionManager::StopCamera()
 	impl->StopCamera(); 
 }
 
-const int ARealSenseSessionManager::GetColorImageWidth() 
+int ARealSenseSessionManager::GetColorImageWidth() const
 { 
 	return impl->GetColorImageWidth(); 
 }
 
-const int ARealSenseSessionManager::GetColorImageHeight() 
+int ARealSenseSessionManager::GetColorImageHeight() const
 { 
 	return impl->GetColorImageHeight(); 
 }
 
-const int ARealSenseSessionManager::GetDepthImageWidth() 
+int ARealSenseSessionManager::GetDepthImageWidth() const
 { 
 	return impl->GetDepthImageWidth(); 
 }
 
-const int ARealSenseSessionManager::GetDepthImageHeight() 
+int ARealSenseSessionManager::GetDepthImageHeight() const
 { 
 	return impl->GetDepthImageHeight(); 
 }
 
-const int ARealSenseSessionManager::GetScan3DImageWidth() 
+int ARealSenseSessionManager::GetScan3DImageWidth() const
 { 
 	return impl->GetScan3DImageWidth(); 
 }
 
-const int ARealSenseSessionManager::GetScan3DImageHeight() 
+int ARealSenseSessionManager::GetScan3DImageHeight() const
 { 
 	return impl->GetScan3DImageHeight(); 
 }
 
-const float ARealSenseSessionManager::GetColorHorizontalFOV() 
+const float ARealSenseSessionManager::GetColorHorizontalFOV() const
 {	
 	return impl->GetColorHorizontalFOV(); 
 }
 
-const float ARealSenseSessionManager::GetColorVerticalFOV() 
+const float ARealSenseSessionManager::GetColorVerticalFOV() const
 { 
 	return impl->GetColorVerticalFOV(); 
 }
 
-const float ARealSenseSessionManager::GetDepthHorizontalFOV() 
+const float ARealSenseSessionManager::GetDepthHorizontalFOV() const
 {	
 	return impl->GetDepthHorizontalFOV(); 
 }
 
-const float ARealSenseSessionManager::GetDepthVerticalFOV() 
+const float ARealSenseSessionManager::GetDepthVerticalFOV() const
 { 
 	return impl->GetDepthVerticalFOV(); 
 }
 
-const ECameraModel ARealSenseSessionManager::GetCameraModel() 
+const ECameraModel ARealSenseSessionManager::GetCameraModel() const 
 { 
 	return impl->GetCameraModel(); 
 }
 
-const FString ARealSenseSessionManager::GetCameraFirmware() 
+const FString ARealSenseSessionManager::GetCameraFirmware() const
 { 
 	return impl->GetCameraFirmware(); 
 }
@@ -150,32 +153,32 @@ void ARealSenseSessionManager::SetDepthCameraResolution(EDepthResolution resolut
 	impl->SetDepthCameraResolution(resolution); 
 }
 
-FStreamResolution ARealSenseSessionManager::GetColorCameraResolution() 
+FStreamResolution ARealSenseSessionManager::GetColorCameraResolution() const
 {
 	return impl->GetColorCameraResolution();
 }
 
-FStreamResolution ARealSenseSessionManager::GetDepthCameraResolution() 
+FStreamResolution ARealSenseSessionManager::GetDepthCameraResolution() const
 {
 	return impl->GetDepthCameraResolution();
 }
 
-bool ARealSenseSessionManager::IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) 
+bool ARealSenseSessionManager::IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) const
 {
 	return impl->IsStreamSetValid(ColorResolution, DepthResolution);
 }
 
-TArray<FSimpleColor> ARealSenseSessionManager::GetColorBuffer() 
+TArray<FSimpleColor> ARealSenseSessionManager::GetColorBuffer() const
 { 
 	return ColorBuffer; 
 }
 
-TArray<int32> ARealSenseSessionManager::GetDepthBuffer() 
+TArray<int32> ARealSenseSessionManager::GetDepthBuffer() const
 { 
 	return DepthBuffer; 
 }
 
-TArray<FSimpleColor> ARealSenseSessionManager::GetScanBuffer() 
+TArray<FSimpleColor> ARealSenseSessionManager::GetScanBuffer() const 
 { 
 	return ScanBuffer; 
 }
@@ -215,7 +218,7 @@ void ARealSenseSessionManager::SetScanningVolume(FVector BoundingBox, int32 Reso
 	impl->SetScanningVolume(BoundingBox, Resolution);
 }
 
-bool ARealSenseSessionManager::IsScanning()
+bool ARealSenseSessionManager::IsScanning() const
 {
 	return impl->IsScanning();
 }
@@ -225,7 +228,7 @@ bool ARealSenseSessionManager::HasScan3DImageSizeChanged()
 	return impl->HasScan3DImageSizeChanged();
 }
 
-bool ARealSenseSessionManager::HasScanCompleted()
+bool ARealSenseSessionManager::HasScanCompleted() const
 {
 	return impl->HasScanCompleted();
 }

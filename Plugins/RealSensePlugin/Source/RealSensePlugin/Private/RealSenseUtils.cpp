@@ -34,6 +34,7 @@ uint8_t ConvertDepthValueTo8Bit(int32 depth, uint32 width)
 std::wstring ConvertFStringToWString(FString F) 
 {
 	std::wstring str;
+	str.reserve(F.Len());
 	for (int i = 0; i < F.Len(); i++)
 		str.push_back(F[i]);
 	return str;
@@ -76,12 +77,6 @@ PXC3DScan::ScanningMode ERealSenseScanModeToPXCScanMode(EScan3DMode mode)
 		return PXC3DScan::ScanningMode::FACE;
 	default:
 		return PXC3DScan::ScanningMode::FACE;
-	//	case EScan3DMode::HEAD:
-	//		return PXC3DScan::ScanningMode::HEAD;
-	//	case EScan3DMode::BODY:
-	//		return PXC3DScan::ScanningMode::BODY;
-	//	case EScan3DMode::VARIABLE:
-	//		return PXC3DScan::ScanningMode::VARIABLE;
 	}
 }
 
@@ -162,8 +157,10 @@ void CopyColorImageToBuffer(PXCImage* image, uint8* data, const uint32 width, co
 	// Extracts the raw data from the PXCImage object.
 	PXCImage::ImageData imageData;
 	pxcStatus result = image->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PIXEL_FORMAT_RGB24, &imageData);
-	if (result != PXC_STATUS_NO_ERROR)
+	if (result != PXC_STATUS_NO_ERROR) {
 		return;
+
+	}
 
 	for (uint32 y = 0; y < height; ++y) {
 		// color points to one row of color image data.
@@ -197,7 +194,7 @@ void CopyDepthImageToBuffer(PXCImage* image, uint16* data, const uint32 width, c
 	for (uint32 y = 0; y < height; ++y) {
 		// depth points to one row of depth image data.
 		const pxcBYTE* depth = imageData.planes[0] + (imageData.pitches[0] * y);
-		memcpy_s(pdata, numBytes, depth, numBytes);
+		std::copy(depth, depth + numBytes, pdata);
 		pdata += numBytes;
 	}
 

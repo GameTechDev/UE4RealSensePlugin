@@ -75,9 +75,9 @@ public:
 
 	inline const float GetDepthVerticalFOV() const { return depthVerticalFOV; }
 
-	const ECameraModel GetCameraModel();
+	const ECameraModel GetCameraModel() const;
 
-	const FString GetCameraFirmware();
+	const FString GetCameraFirmware() const;
 
 	inline FStreamResolution GetColorCameraResolution() const { return colorResolution; }
 
@@ -115,17 +115,17 @@ public:
 
 	void ResetScanning();
 
-	void SaveScan(EScan3DFileFormat saveFileFormat, FString filename);
+	void SaveScan(EScan3DFileFormat saveFileFormat, const FString& filename);
 	
-	void LoadScan(FString filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);
+	void LoadScan(const FString& filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);
 
-	inline bool IsScanning() { return (p3DScan->IsScanning() != 0); }
+	inline bool IsScanning() const { return (p3DScan->IsScanning() != 0); }
 
 	inline FStreamResolution GetScan3DResolution() const { return scan3DResolution; }
 
-	inline const int GetScan3DImageWidth() const { return scan3DResolution.width; }
+	inline int GetScan3DImageWidth() const { return scan3DResolution.width; }
 
-	inline const int GetScan3DImageHeight() const { return scan3DResolution.height; }
+	inline int GetScan3DImageHeight() const { return scan3DResolution.height; }
 
 	inline const uint8_t* GetScanBuffer() const { return fgFrame->scanImage.data(); }
 
@@ -134,30 +134,39 @@ public:
 	inline bool HasScanCompleted() const { return scanCompleted.load(); }
 
 private:
-	/* Core SDK handles */
+	// Core SDK handles
 
-	PXCSession* session;
-	PXCSenseManager* senseManager;
-	PXCCapture* capture;
-	PXCCapture::Device* device;
+	struct RealSenseDeleter {
+		void operator()(PXCSession* s) { s->Release(); }
+		void operator()(PXCSenseManager* sm) { sm->Release(); }
+		void operator()(PXCCapture* c) { c->Release(); }
+		void operator()(PXCCapture::Device* d) { d->Release(); }
+		void operator()(PXC3DScan* sc) { ; }
+	};
+
+	std::unique_ptr<PXCSession, RealSenseDeleter> session;
+	std::unique_ptr<PXCSenseManager, RealSenseDeleter> senseManager;
+	std::unique_ptr<PXCCapture, RealSenseDeleter> capture;
+	std::unique_ptr<PXCCapture::Device, RealSenseDeleter> device;
+
 	PXCCapture::DeviceInfo deviceInfo;
 	pxcStatus status;  // Status ID used by RSSDK functions
 
-	/* SDK Module handles*/
+	// SDK Module handles
 
-	PXC3DScan* p3DScan;
+	std::unique_ptr<PXC3DScan, RealSenseDeleter> p3DScan;
 
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
 
-	std::atomic<bool> colorStreamingEnabled;
-	std::atomic<bool> depthStreamingEnabled;
-	std::atomic<bool> scan3DEnabled;
+	std::atomic_bool colorStreamingEnabled;
+	std::atomic_bool depthStreamingEnabled;
+	std::atomic_bool scan3DEnabled;
 
-	/* Camera processing members */
+	// Camera processing members
 
 	std::thread cameraThread;
-	std::atomic<bool> cameraThreadRunning;
+	std::atomic_bool cameraThreadRunning;
 
 	std::unique_ptr<RealSenseDataFrame> fgFrame;
 	std::unique_ptr<RealSenseDataFrame> midFrame;
@@ -166,7 +175,7 @@ private:
 	// Mutex for locking access to the midFrame
 	std::mutex midFrameMutex;
 
-	/* Core SDK members */
+	// Core SDK members
 
 	FStreamResolution colorResolution;
 	FStreamResolution depthResolution;
@@ -176,20 +185,20 @@ private:
 	float depthHorizontalFOV;
 	float depthVerticalFOV;
 
-	/* 3D Scan members */
+	// 3D Scan members
 
 	FStreamResolution scan3DResolution;
 
 	PXC3DScan::FileFormat scan3DFileFormat;
 	std::wstring scan3DFilename;
 
-	std::atomic<bool> scanStarted;
-	std::atomic<bool> scanStopped;
-	std::atomic<bool> reconstructEnabled;
-	std::atomic<bool> scanCompleted;
-	std::atomic<bool> scan3DImageSizeChanged;
+	std::atomic_bool scanStarted;
+	std::atomic_bool scanStopped;
+	std::atomic_bool reconstructEnabled;
+	std::atomic_bool scanCompleted;
+	std::atomic_bool scan3DImageSizeChanged;
 
-	/* Helper Functions */
+	// Helper Functions
 
 	void UpdateScan3DImageSize(PXCImage::ImageInfo info);
 };

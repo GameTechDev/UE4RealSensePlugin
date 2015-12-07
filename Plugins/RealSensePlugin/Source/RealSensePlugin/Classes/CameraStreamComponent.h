@@ -44,7 +44,6 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 	UFUNCTION(BlueprintCallable, Category = "RealSense")
 	virtual void SetDepthCameraResolution(EDepthResolution Resolution) override;
 
-	// Default Constructor
 	UCameraStreamComponent();
 
 	// Adds the CAMERA_STREAMING feature to the RealSenseSessionManager and

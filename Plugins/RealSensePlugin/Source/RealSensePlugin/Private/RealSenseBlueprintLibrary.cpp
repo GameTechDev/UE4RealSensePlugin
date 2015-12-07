@@ -75,8 +75,9 @@ FString URealSenseBlueprintLibrary::ECameraModelToString(ECameraModel value)
 // For convenience, this function returns a pointer to the input Texture that was modified.
 UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpleColor>& Buffer, UTexture2D* Texture) 
 {
-	if (Texture == nullptr)
+	if (Texture == nullptr) {
 		return nullptr;
+	}
 
 	if (Buffer.Num() != Texture->GetSizeX() * Texture->GetSizeY()) {
 		RS_LOG(Error, "Buffer / Texture Size Mismatch")
@@ -86,7 +87,9 @@ UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpl
 	// The Texture's PlatformData needs to be locked before it can be modified.
 	auto out = reinterpret_cast<uint8_t *>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
-	int size = Texture->GetSizeX() * Texture->GetSizeY() * 4;
+	// There are four bytes per pixel, one each for Red, Green, Blue, and Alpha.
+	int bytesPerPixel = 4;
+	int size = Texture->GetSizeX() * Texture->GetSizeY() * bytesPerPixel;
 	memcpy_s(out, size, Buffer.GetData(), size);
 
 	Texture->PlatformData->Mips[0].BulkData.Unlock();
@@ -99,8 +102,9 @@ UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpl
 // For convenience, this function returns a pointer to the input Texture that was modified.
 UTexture2D* URealSenseBlueprintLibrary::DepthBufferToTexture(const TArray<int32>& Buffer, UTexture2D* Texture)
 {
-	if (Texture == nullptr)
+	if (Texture == nullptr) {
 		return nullptr;
+	}
 
 	if (Buffer.Num() != Texture->GetSizeX() * Texture->GetSizeY()) {
 		RS_LOG(Error, "Buffer / Texture Size Mismatch")
@@ -125,11 +129,22 @@ UTexture2D* URealSenseBlueprintLibrary::DepthBufferToTexture(const TArray<int32>
 	return Texture;
 }
 
+// Finds all .OBJ files in the specified Directory, relative to the Content 
+// path of the game.
 TArray<FString> URealSenseBlueprintLibrary::GetMeshFiles(FString Directory)
 {
-	TArray<FString> MeshFiles;
+	// Ensure that the directory ends with a trailing slash
+	if (Directory.EndsWith("/") == false) {
+		Directory.Append("/");
+	}
+
+	// Get the absolute path of the game's Content directory and append the
+	// specified path to it, along with the filename.
+	FString Dir = FPaths::GameContentDir() + Directory + TEXT("*.obj");
+
 	IFileManager& FileManager = IFileManager::Get();
-	FString Dir = FPaths::GameContentDir() + Directory + TEXT("/*.obj");
+	TArray<FString> MeshFiles;
 	FileManager.FindFiles(MeshFiles, *Dir, true, false);
+
 	return MeshFiles;
 }
