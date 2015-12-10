@@ -1,0 +1,11 @@
+Binaries/
+Build/
+Intermediate/
+Saved/
+
+*.sdf
+*.sln
+*.suo
+
+Plugins/RealSensePlugin/Binaries/
+Plugins/RealSensePlugin/Intermediate/

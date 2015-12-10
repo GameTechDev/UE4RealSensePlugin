@@ -1,0 +1,21 @@
+{
+    "FileVersion" : 3,
+	
+	"FriendlyName" : "Intel(R) RealSense(TM) Plugin",
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"CreatedBy" : "Intel Corporation",
+	"CreatedByURL" : "http://www.intel.com",
+	"EngineVersion" : 1579795,
+	"Description" : "This plugin provides Blueprints support for Intel(R) RealSense(TM) Technology and the RealSense SDK",
+	"Category" : "RealSense",
+	"CanContainContent" : true,
+	
+    "Modules" :
+	[
+		{
+			"Name" : "RealSensePlugin",
+			"Type" : "Runtime"
+		}
+	]
+}
