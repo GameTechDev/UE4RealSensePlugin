@@ -6,6 +6,8 @@
 #include <fstream>
 #include "HideWindowsPlatformTypes.h"
 
+#include "CoreMisc.h"
+
 #include "RealSenseTypes.h"
 #include "RealSenseUtils.h"
 #include "PXCSenseManager.h"
@@ -20,9 +22,9 @@
 //             Read data from foreground_frame
 struct RealSenseDataFrame {
 	uint64 number;  // Stores an ID for the frame based on its occurrence in time
-	std::vector<uint8_t> colorImage;  // Container for the camera's raw color stream data
-	std::vector<uint16_t> depthImage;  // Container for the camera's raw depth stream data
-	std::vector<uint8_t> scanImage;  // Container for the scan preview image provided by the 3DScan middleware
+	TArray<uint8> colorImage;  // Container for the camera's raw color stream data
+	TArray<uint16> depthImage;  // Container for the camera's raw depth stream data
+	TArray<uint8> scanImage;  // Container for the scan preview image provided by the 3DScan middleware
 
 	RealSenseDataFrame() : number(0) {}
 };
@@ -97,9 +99,9 @@ public:
 
 	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution);
 
-	inline const uint8_t* GetColorBuffer() const { return fgFrame->colorImage.data(); }
+	inline const uint8* GetColorBuffer() const { return fgFrame->colorImage.GetData(); }
 
-	inline const uint16_t* GetDepthBuffer() const { return fgFrame->depthImage.data(); }
+	inline const uint16* GetDepthBuffer() const { return fgFrame->depthImage.GetData(); }
 
 	/* 
 	 * 3D Scanning Module Support 
@@ -127,7 +129,7 @@ public:
 
 	inline int GetScan3DImageHeight() const { return scan3DResolution.height; }
 
-	inline const uint8_t* GetScanBuffer() const { return fgFrame->scanImage.data(); }
+	inline const uint8* GetScanBuffer() const { return fgFrame->scanImage.GetData(); }
 
 	inline bool HasScan3DImageSizeChanged() const { return scan3DImageSizeChanged.load(); }
 
@@ -190,7 +192,7 @@ private:
 	FStreamResolution scan3DResolution;
 
 	PXC3DScan::FileFormat scan3DFileFormat;
-	std::wstring scan3DFilename;
+	FString scan3DFilename;
 
 	std::atomic_bool scanStarted;
 	std::atomic_bool scanStopped;

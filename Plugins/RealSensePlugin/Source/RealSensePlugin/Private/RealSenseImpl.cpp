@@ -155,12 +155,12 @@ void RealSenseImpl::CameraThread()
 		// Performs Core SDK and middleware processing and store results 
 		// in background RealSenseDataFrame
 		if (colorStreamingEnabled && (sample->color != nullptr)) {
-			bgFrame->colorImage.clear();
-			CopyColorImageToBuffer(sample->color, bgFrame->colorImage.data(), colorResolution.width, colorResolution.height);
+			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
 		}
 
-		if (depthStreamingEnabled && (sample->depth != nullptr))
-			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage.data(), depthResolution.width, depthResolution.height);
+		if (depthStreamingEnabled && (sample->depth != nullptr)) {
+			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
+		}
 
 		if (scan3DEnabled) {
 			if (scanStarted) {
@@ -180,17 +180,17 @@ void RealSenseImpl::CameraThread()
 			PXCImage* scanImage = p3DScan->AcquirePreviewImage();
 			if (scanImage != nullptr) {
 				UpdateScan3DImageSize(scanImage->QueryInfo());
-				CopyColorImageToBuffer(scanImage, bgFrame->scanImage.data(), scan3DResolution.width, scan3DResolution.height);
+				CopyColorImageToBuffer(scanImage, bgFrame->scanImage, scan3DResolution.width, scan3DResolution.height);
 				scanImage->Release();
 			}
 			
 			if (reconstructEnabled) {
-				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.c_str());
+				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
 				reconstructEnabled.store(false);
 				scanCompleted.store(true);
 			}
 		}
-
+		
 		senseManager->ReleaseFrame();
 
 		// Swaps background and mid RealSenseDataFrames
@@ -284,9 +284,9 @@ void RealSenseImpl::SetColorCameraResolution(EColorResolution resolution)
 
 	if (status == PXC_STATUS_NO_ERROR) {
 		int bytesPerPixel = 4;
-		bgFrame->colorImage.resize(colorResolution.width * colorResolution.height * bytesPerPixel);
-		midFrame->colorImage.resize(colorResolution.width * colorResolution.height * bytesPerPixel);
-		fgFrame->colorImage.resize(colorResolution.width * colorResolution.height * bytesPerPixel);
+		bgFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
+		midFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
+		fgFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
 	}
 }
 
@@ -299,9 +299,9 @@ void RealSenseImpl::SetDepthCameraResolution(EDepthResolution resolution)
 	RS_LOG_STATUS(status, "Enabled Depth Stream: %d x %d x %f", depthResolution.width, depthResolution.height, depthResolution.fps)
 
 	if (status == PXC_STATUS_NO_ERROR) {
-		bgFrame->depthImage.resize(depthResolution.width * depthResolution.height);
-		midFrame->depthImage.resize(depthResolution.width * depthResolution.height);
-		fgFrame->depthImage.resize(depthResolution.width * depthResolution.height);
+		bgFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
+		midFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
+		fgFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
 	}
 }
 
@@ -408,7 +408,7 @@ void RealSenseImpl::ResetScanning()
 void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, const FString& filename) 
 {
 	scan3DFileFormat = static_cast<PXC3DScan::FileFormat> (saveFileFormat);
-	scan3DFilename = ConvertFStringToWString(filename);
+	scan3DFilename = filename;
 	reconstructEnabled.store(true);
 }
 
@@ -424,11 +424,18 @@ void RealSenseImpl::LoadScan(const FString& filename, TArray<FVector>& Vertices,
 	Colors.Empty();
 
 	std::ifstream file;
-	file.open(ConvertFStringToWString(filename));
+	file.open(filename.GetCharArray().GetData());
 
 	if (!file.is_open())
 		return;
 	
+
+//	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+//	IFileHandle* FileHandle = PlatformFile.OpenRead(filename.GetCharArray().GetData(), false);
+
+//	if (FileHandle == nullptr)
+//		return;
+
 	float x, y, z, r, g, b = 0.0f;
 	int v1, v2, v3, n1, n2, n3 = 0;
 	std::string line;
@@ -478,9 +485,9 @@ void RealSenseImpl::UpdateScan3DImageSize(PXCImage::ImageInfo info)
 	scan3DResolution.height = info.height;
 
 	int bytesPerPixel = 4;
-	bgFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
-	midFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
-	fgFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
+	bgFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
+	midFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
+	fgFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
 
 	scan3DImageSizeChanged.store(true);
 }

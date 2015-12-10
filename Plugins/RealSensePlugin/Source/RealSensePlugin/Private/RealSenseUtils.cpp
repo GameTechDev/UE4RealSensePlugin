@@ -12,7 +12,7 @@ FVector ConvertRSVectorToUnreal(FVector v)
 
 // Maps the depth value to a number between 0 - 255 so it can
 // be represented as an 8-bit color.
-uint8_t ConvertDepthValueTo8Bit(int32 depth, uint32 width) 
+uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width) 
 {
 	// The F200 and R200 cameras support different maximum depths.
 	float max_depth = 0.0f;
@@ -27,17 +27,6 @@ uint8_t ConvertDepthValueTo8Bit(int32 depth, uint32 width)
 		return 0;
 
 	return (255 * ((max_depth - depth) / max_depth));
-}
-
-// Takes every character from the input FString and 
-// adds them to a new std::wstring object.
-std::wstring ConvertFStringToWString(FString F) 
-{
-	std::wstring str;
-	str.reserve(F.Len());
-	for (int i = 0; i < F.Len(); i++)
-		str.push_back(F[i]);
-	return str;
 }
 
 PXCImage::PixelFormat ERealSensePixelFormatToPXCPixelFormat(ERealSensePixelFormat format)
@@ -139,7 +128,7 @@ FStreamResolution GetEDepthResolutionValue(EDepthResolution res)
 // Set the color of every pixel in the Texture to the input color.
 void ClearTexture(UTexture2D* Texture, FColor color) 
 {
-	auto out = reinterpret_cast<uint8_t *>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 	for (int i = 0; i < Texture->GetSizeX() * Texture->GetSizeY(); i++, out += 4) {
 		out[0] = color.R;
 		out[1] = color.G;
@@ -152,7 +141,7 @@ void ClearTexture(UTexture2D* Texture, FColor color)
 
 // Original function borrowed from RSSDK sp_glut_utils.h
 // Copies the data from the PXCImage into the input data buffer.
-void CopyColorImageToBuffer(PXCImage* image, uint8* data, const uint32 width, const uint32 height)
+void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height)
 {
 	// Extracts the raw data from the PXCImage object.
 	PXCImage::ImageData imageData;
@@ -162,14 +151,15 @@ void CopyColorImageToBuffer(PXCImage* image, uint8* data, const uint32 width, co
 
 	}
 
+	uint32 i = 0;
 	for (uint32 y = 0; y < height; ++y) {
 		// color points to one row of color image data.
 		const pxcBYTE* color = imageData.planes[0] + (imageData.pitches[0] * y);
-		for (uint32 x = 0; x < width; ++x, data += 4, color += 3) {
-			data[0] = color[0];
-			data[1] = color[1];
-			data[2] = color[2];
-			data[3] = 0xff; // alpha = 255
+		for (uint32 x = 0; x < width; ++x, color += 3) {
+			data[i++] = color[0];
+			data[i++] = color[1];
+			data[i++] = color[2];
+			data[i++] = 0xff; // alpha = 255
 		}
 	}
 	
@@ -178,7 +168,7 @@ void CopyColorImageToBuffer(PXCImage* image, uint8* data, const uint32 width, co
 
 // Original function borrowed from RSSDK sp_glut_utils.h
 // Copies the data from the PXCImage into the input data buffer.
-void CopyDepthImageToBuffer(PXCImage* image, uint16* data, const uint32 width, const uint32 height)
+void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height)
 {
 	// Extracts the raw data from the PXCImage object.
 	PXCImage::ImageData imageData;
@@ -186,16 +176,15 @@ void CopyDepthImageToBuffer(PXCImage* image, uint16* data, const uint32 width, c
 	if (result != PXC_STATUS_NO_ERROR)
 		return;
 
-	// In order to do the memcpy, the source and destination buffers 
-	// need to be of the same type.
-	uint8* pdata = reinterpret_cast<uint8*>(data);
 	const uint32 numBytes = width * sizeof(uint16);
 
+	uint32 i = 0;
 	for (uint32 y = 0; y < height; ++y) {
 		// depth points to one row of depth image data.
 		const pxcBYTE* depth = imageData.planes[0] + (imageData.pitches[0] * y);
-		std::copy(depth, depth + numBytes, pdata);
-		pdata += numBytes;
+		for (uint32 x = 0; x < width; ++x, depth += 2) {
+			data[i++] = *depth;
+		}
 	}
 
 	image->ReleaseAccess(&imageData);

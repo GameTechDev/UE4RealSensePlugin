@@ -3,6 +3,7 @@ Build/
 Intermediate/
 Saved/
 Content/StarterContent
+Content/*.obj
 
 *.sdf
 *.sln

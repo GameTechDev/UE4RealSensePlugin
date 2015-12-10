@@ -39,10 +39,7 @@ DECLARE_LOG_CATEGORY_EXTERN(RealSensePlugin, Log, All);
 FVector ConvertRSVectorToUnreal(FVector v);
 
 // Converts a depth value (in millimeters) to an 8-bit scale (between 0 - 255).
-uint8_t ConvertDepthValueTo8Bit(int32 depth, uint32 width);
-
-// Converts an FString into an STL wstring.
-std::wstring ConvertFStringToWString(FString F);
+uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width);
 
 // Returns a StreamResolution structure containing the values from the enumerated ColorResolution
 FStreamResolution GetEColorResolutionValue(EColorResolution res);
@@ -60,7 +57,7 @@ PXC3DScan::ScanningMode ERealSenseScanModeToPXCScanMode(EScan3DMode mode);
 void ClearTexture(UTexture2D* texture, FColor color);
 
 // Copies the data from the input color PXCImage into the input data structure.
-void CopyColorImageToBuffer(PXCImage* image, uint8* data, const uint32 width, const uint32 height);
+void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height);
 
 // Copies the data from the input depth PXCImage into the input data structure.
-void CopyDepthImageToBuffer(PXCImage* image, uint16* data, const uint32 width, const uint32 height);
+void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height);

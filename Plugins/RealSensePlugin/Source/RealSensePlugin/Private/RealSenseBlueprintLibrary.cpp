@@ -85,7 +85,7 @@ UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpl
 	}
 	
 	// The Texture's PlatformData needs to be locked before it can be modified.
-	auto out = reinterpret_cast<uint8_t *>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
 	// There are four bytes per pixel, one each for Red, Green, Blue, and Alpha.
 	int bytesPerPixel = 4;
@@ -112,11 +112,11 @@ UTexture2D* URealSenseBlueprintLibrary::DepthBufferToTexture(const TArray<int32>
 	}
 
 	// The Texture's PlatformData needs to be locked before it can be modified.
-	auto out = reinterpret_cast<uint8_t *>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
 	for (int x : Buffer) {
 		// Convert the depth value (in millimeters) into a value between 0 - 255. 
-		uint8_t d = ConvertDepthValueTo8Bit(x, Texture->GetSizeX());
+		uint8 d = ConvertDepthValueTo8Bit(x, Texture->GetSizeX());
 		*out++ = d;
 		*out++ = d;
 		*out++ = d;
