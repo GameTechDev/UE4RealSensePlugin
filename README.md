@@ -32,4 +32,5 @@ Check out this tutorial to get started using the RealSense plugin: COMING SOON!
 * Scan 3D - Supports the scanning of faces and objects into 3D models
 
 #### In-Progress Components
+* Head Tracking - Provides data for the user's head position and rotation
 * Scene Perception - Supports the scanning of small scenes into 3D models

@@ -2,10 +2,13 @@ Binaries/
 Build/
 Intermediate/
 Saved/
+Content/StarterContent
+Content/*.obj
 
 *.sdf
 *.sln
 *.suo
+*.opensdf
 
 Plugins/RealSensePlugin/Binaries/
 Plugins/RealSensePlugin/Intermediate/
