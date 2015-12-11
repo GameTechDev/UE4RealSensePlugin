@@ -8,46 +8,54 @@
 // share RealSense data between the camera processing thread and the main thread.
 RealSenseImpl::RealSenseImpl()
 {
-	session = PXCSession::CreateInstance();
+	session = std::unique_ptr<PXCSession, RealSenseDeleter>(PXCSession::CreateInstance());
 	if (session == nullptr)
 		RS_LOG(Error, "Failed to create PXCSession")
 	else
-		RS_LOG(Log, "Created PXCSession")
+	RS_LOG(Log, "Created PXCSession")
 
-	senseManager = session->CreateSenseManager();
+	senseManager = std::unique_ptr<PXCSenseManager, RealSenseDeleter>(session->CreateSenseManager());
 	if (senseManager == nullptr)
 		RS_LOG(Error, "Failed to create PXCSenseManager")
 	else
-		RS_LOG(Log, "Created PXCSenseManager")
+	RS_LOG(Log, "Created PXCSenseManager")
 
-	capture = nullptr;
-	device = nullptr;
+	capture = std::unique_ptr<PXCCapture, RealSenseDeleter>(nullptr);
+	device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(nullptr);
+
 	deviceInfo = {};
 
 	// Loop through video capture devices to find a RealSense Camera
 	PXCSession::ImplDesc desc1 = {};
 	desc1.group = PXCSession::IMPL_GROUP_SENSOR;
 	desc1.subgroup = PXCSession::IMPL_SUBGROUP_VIDEO_CAPTURE;
-	for (int m = 0; ; m++) {
-		PXCSession::ImplDesc desc2 = {};
-		if (session->QueryImpl(&desc1, m, &desc2) != PXC_STATUS_NO_ERROR) 
+	for (int m = 0;; m++) {
+		if (device)
 			break;
 
-		if (session->CreateImpl<PXCCapture>(&desc2, &capture) != PXC_STATUS_NO_ERROR) 
-			continue;
+		PXCSession::ImplDesc desc2 = {};
+		if (session->QueryImpl(&desc1, m, &desc2) != PXC_STATUS_NO_ERROR)
+			break;
 
-		for (int j = 0; ; j++) {
-			if (capture->QueryDeviceInfo(j, &deviceInfo) != PXC_STATUS_NO_ERROR) 
+		PXCCapture* tmp;
+		if (session->CreateImpl<PXCCapture>(&desc2, &tmp) != PXC_STATUS_NO_ERROR)
+			continue;
+		capture.reset(tmp);
+
+		for (int j = 0;; j++) {
+			if (capture->QueryDeviceInfo(j, &deviceInfo) != PXC_STATUS_NO_ERROR)
 				break;
 
 			if ((deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_F200) ||
-				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_R200)) {
-				device = capture->CreateDevice(j);
+				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_R200) ||
+				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_R200_ENHANCED) ||
+				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_SR300)) {
+				device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(capture->CreateDevice(j));
 			}
 		}
 	}
 
-	p3DScan = nullptr;
+	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
 	pFace = nullptr;
 
 	RealSenseFeatureSet = 0;
@@ -98,13 +106,6 @@ RealSenseImpl::~RealSenseImpl()
 		cameraThreadRunning.store(false);
 		cameraThread.join();
 	}
-
-	if (device != nullptr)
-		device->Release();
-
-	capture->Release();
-	senseManager->Release();
-	session->Release();
 }
 
 // Camera Processing Thread
@@ -154,12 +155,12 @@ void RealSenseImpl::CameraThread()
 		// Performs Core SDK and middleware processing and store results 
 		// in background RealSenseDataFrame
 		if (colorStreamingEnabled && (sample->color != nullptr)) {
-			bgFrame->colorImage.clear();
-			CopyColorImageToBuffer(sample->color, bgFrame->colorImage.data(), colorResolution.width, colorResolution.height);
+			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
 		}
 
-		if (depthStreamingEnabled && (sample->depth != nullptr))
-			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage.data(), depthResolution.width, depthResolution.height);
+		if (depthStreamingEnabled && (sample->depth != nullptr)) {
+			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
+		}
 
 		if (scan3DEnabled) {
 			if (scanStarted) {
@@ -179,12 +180,12 @@ void RealSenseImpl::CameraThread()
 			PXCImage* scanImage = p3DScan->AcquirePreviewImage();
 			if (scanImage != nullptr) {
 				UpdateScan3DImageSize(scanImage->QueryInfo());
-				CopyColorImageToBuffer(scanImage, bgFrame->scanImage.data(), scan3DResolution.width, scan3DResolution.height);
+				CopyColorImageToBuffer(scanImage, bgFrame->scanImage, scan3DResolution.width, scan3DResolution.height);
 				scanImage->Release();
 			}
 			
 			if (reconstructEnabled) {
-				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.c_str());
+				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
 				reconstructEnabled.store(false);
 				scanCompleted.store(true);
 			}
@@ -261,7 +262,7 @@ void RealSenseImpl::EnableRealSenseFeature(RealSenseFeature feature)
 	}
 	if (feature == RealSenseFeature::SCAN_3D) {
 		senseManager->Enable3DScan();
-		p3DScan = senseManager->Query3DScan();
+		p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(senseManager->Query3DScan());
 		scan3DEnabled.store(true);
 	}
 	if (feature == RealSenseFeature::HEAD_TRACKING) {
@@ -319,37 +320,41 @@ void RealSenseImpl::DisableRealSenseFeatures(uint32 featureSet)
 }
 
 // Returns the connceted device's model as a Blueprintable enum value.
-const ECameraModel RealSenseImpl::GetCameraModel() 
+const ECameraModel RealSenseImpl::GetCameraModel() const
 {
 	switch (deviceInfo.model) {
 	case PXCCapture::DeviceModel::DEVICE_MODEL_F200:
 		return ECameraModel::F200;
 	case PXCCapture::DeviceModel::DEVICE_MODEL_R200:
+	case PXCCapture::DeviceModel::DEVICE_MODEL_R200_ENHANCED:
 		return ECameraModel::R200;
+	case PXCCapture::DeviceModel::DEVICE_MODEL_SR300:
+		return ECameraModel::SR300;
 	default:
 		return ECameraModel::Other;
 	}
 }
 
 // Returns the connected camera's firmware version as a human-readable string.
-const FString RealSenseImpl::GetCameraFirmware() 
+const FString RealSenseImpl::GetCameraFirmware() const
 {
 	return FString::Printf(TEXT("%d.%d.%d.%d"), deviceInfo.firmware[0], deviceInfo.firmware[1], deviceInfo.firmware[2], deviceInfo.firmware[3]);
 }
 
 // Enables the color camera stream of the SenseManager using the specified resolution
 // and resizes the colorImage buffer of the RealSenseDataFrames to match.
-void RealSenseImpl::SetColorCameraResolution(EColorResolution resolution) 
+void RealSenseImpl::SetColorCameraResolution(EColorResolution resolution)
 {
 	colorResolution = GetEColorResolutionValue(resolution);
 	status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_COLOR, colorResolution.width, colorResolution.height, colorResolution.fps);
 	RS_LOG_STATUS(status, "Enabled Color Stream: %d x %d x %f", colorResolution.width, colorResolution.height, colorResolution.fps)
 
-	if (status == PXC_STATUS_NO_ERROR) {
-		bgFrame->colorImage.resize(colorResolution.width * colorResolution.height * 4);
-		midFrame->colorImage.resize(colorResolution.width * colorResolution.height * 4);
-		fgFrame->colorImage.resize(colorResolution.width * colorResolution.height * 4);
-	}
+		if (status == PXC_STATUS_NO_ERROR) {
+			int bytesPerPixel = 4;
+			bgFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
+			midFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
+			fgFrame->colorImage.SetNumZeroed(colorResolution.width * colorResolution.height * bytesPerPixel);
+		}
 }
 
 // Enables the depth camera stream of the SenseManager using the specified resolution
@@ -360,11 +365,11 @@ void RealSenseImpl::SetDepthCameraResolution(EDepthResolution resolution)
 	status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_DEPTH, depthResolution.width, depthResolution.height, depthResolution.fps);
 	RS_LOG_STATUS(status, "Enabled Depth Stream: %d x %d x %f", depthResolution.width, depthResolution.height, depthResolution.fps)
 
-	if (status == PXC_STATUS_NO_ERROR) {
-		bgFrame->depthImage.resize(depthResolution.width * depthResolution.height);
-		midFrame->depthImage.resize(depthResolution.width * depthResolution.height);
-		fgFrame->depthImage.resize(depthResolution.width * depthResolution.height);
-	}
+		if (status == PXC_STATUS_NO_ERROR) {
+			bgFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
+			midFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
+			fgFrame->depthImage.SetNumZeroed(depthResolution.width * depthResolution.height);
+		}
 }
 
 // Creates a StreamProfile for the specified color and depth resolutions and
@@ -410,10 +415,12 @@ bool RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, b
 	config.mode = ERealSenseScanModeToPXCScanMode(scanningMode);
 
 	config.options = PXC3DScan::ReconstructionOption::NONE;
-	if (solidify)
+	if (solidify) {
 		config.options = config.options | PXC3DScan::ReconstructionOption::SOLIDIFICATION;
-	if (texture)
+	}
+	if (texture) {
 		config.options = config.options | PXC3DScan::ReconstructionOption::TEXTURE;
+	}
 
 	config.startScan = false;
 
@@ -421,7 +428,7 @@ bool RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, b
 
 	status = p3DScan->SetConfiguration(config);
 	RS_LOG_STATUS(status, "Scan3D Configure Scanning")
-	return (status == PXC_STATUS_NO_ERROR);
+		return (status == PXC_STATUS_NO_ERROR);
 }
 
 // Manually sets the 3D volume in which the 3D scanning module will collect
@@ -467,10 +474,10 @@ void RealSenseImpl::ResetScanning()
 // Stores the file format and filename to use for saving the scan and sets the
 // reconstructEnabled flag to true. On the next iteration of the camera processing
 // loop, it will load this flag and reconstruct the scanned data as a mesh file.
-void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, FString filename) 
+void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, const FString& filename)
 {
 	scan3DFileFormat = static_cast<PXC3DScan::FileFormat> (saveFileFormat);
-	scan3DFilename = ConvertFStringToWString(filename);
+	scan3DFilename = filename;
 	reconstructEnabled.store(true);
 }
 
@@ -479,14 +486,14 @@ void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, FString filename)
 //
 // This function then finds the average vertex position (the mesh center) and 
 // moves all vertices to be centered about that point.
-void RealSenseImpl::LoadScan(FString filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors)
+void RealSenseImpl::LoadScan(const FString& filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors)
 {
 	Vertices.Empty();
 	Triangles.Empty();
 	Colors.Empty();
 
 	std::ifstream file;
-	file.open(ConvertFStringToWString(filename));
+	file.open(filename.GetCharArray().GetData());
 
 	if (!file.is_open())
 		return;
@@ -505,6 +512,7 @@ void RealSenseImpl::LoadScan(FString filename, TArray<FVector>& Vertices, TArray
 		}
 		else if (line[0] == 'f') {
 			sscanf_s(line.substr(1).c_str(), "%d//%d %d//%d %d//%d", &v1, &n1, &v2, &n2, &v3, &n3);
+			// Need to subtract 1 from the vertex indices because .OBJ files start indexing them at at 1, not 0
 			Triangles.Add(v1 - 1);
 			Triangles.Add(v2 - 1);
 			Triangles.Add(v3 - 1);
@@ -512,13 +520,15 @@ void RealSenseImpl::LoadScan(FString filename, TArray<FVector>& Vertices, TArray
 	}
 
 	FVector MeshCenter = FVector(0.0f, 0.0f, 0.0f);
-	for (FVector Vert : Vertices)
+	for (FVector Vert : Vertices) {
 		MeshCenter += Vert;
-	MeshCenter /= Vertices.Num();
-	for (int i = 0; i < Vertices.Num(); i++)
-		Vertices[i] -= MeshCenter;
+	}
 
-	file.close();
+	MeshCenter /= Vertices.Num();
+
+	for (int i = 0; i < Vertices.Num(); i++) {
+		Vertices[i] -= MeshCenter;
+	}
 }
 
 // The input ImageInfo object contains the wight and height of the preview image
@@ -535,9 +545,10 @@ void RealSenseImpl::UpdateScan3DImageSize(PXCImage::ImageInfo info)
 	scan3DResolution.width = info.width;
 	scan3DResolution.height = info.height;
 
-	bgFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * 4);
-	midFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * 4);
-	fgFrame->scanImage.resize(scan3DResolution.width * scan3DResolution.height * 4);
+	int bytesPerPixel = 4;
+	bgFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
+	midFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
+	fgFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
 
 	scan3DImageSizeChanged.store(true);
 }

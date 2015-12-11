@@ -9,8 +9,9 @@ void UCameraStreamComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	if (globalRealSenseSession != nullptr)
+	if (globalRealSenseSession != nullptr) {
 		globalRealSenseSession->AddRealSenseFeature(RealSenseFeature::CAMERA_STREAMING);
+	}
 	
 	ColorTexture = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
 	ClearTexture(ColorTexture, FColor(0, 0, 0, 0));
@@ -22,8 +23,9 @@ void UCameraStreamComponent::InitializeComponent()
 // Copies the ColorBuffer and DepthBuffer from the RealSenseSessionManager.
 void UCameraStreamComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
-	if (globalRealSenseSession->IsCameraRunning() == false)
+	if (globalRealSenseSession->IsCameraRunning() == false) {
 		return;
+	}
 
 	ColorBuffer = globalRealSenseSession->GetColorBuffer();
 	DepthBuffer = globalRealSenseSession->GetDepthBuffer();
@@ -34,8 +36,9 @@ void UCameraStreamComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 // to have the same resolution.
 void UCameraStreamComponent::SetColorCameraResolution(EColorResolution resolution) 
 {
-	if (resolution == EColorResolution::UNDEFINED)
+	if (resolution == EColorResolution::UNDEFINED) {
 		return;
+	}
 
 	Super::SetColorCameraResolution(resolution);
 
@@ -50,8 +53,9 @@ void UCameraStreamComponent::SetColorCameraResolution(EColorResolution resolutio
 // to have the same resolution.
 void UCameraStreamComponent::SetDepthCameraResolution(EDepthResolution resolution)
 {
-	if (resolution == EDepthResolution::UNDEFINED)
+	if (resolution == EDepthResolution::UNDEFINED) {
 		return;
+	}
 
 	Super::SetDepthCameraResolution(resolution);
 	

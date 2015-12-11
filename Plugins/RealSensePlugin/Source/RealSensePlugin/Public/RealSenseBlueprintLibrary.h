@@ -34,5 +34,9 @@ UCLASS() class URealSenseBlueprintLibrary : public UBlueprintFunctionLibrary
 	// @return The input Texture2D object, modified to contain the data from the input buffer
 	UFUNCTION(BlueprintCallable, Category = "RealSense Utilities") static UTexture2D* DepthBufferToTexture(const TArray<int32>& Buffer, UTexture2D* Texture);
 
+	// Returns an array of .OBJ filenames found in the specified directory.
+	// Note: The path is relative to the /Game/Content asset directory.
+	// Example: GetMeshFiles("Scans/Faces") searches for .OBJ files in 
+	// /Games/Content/Scans/Faces.
 	UFUNCTION(BlueprintCallable, Category = "RealSense Utilities") static TArray<FString> GetMeshFiles(FString Directory);
 };

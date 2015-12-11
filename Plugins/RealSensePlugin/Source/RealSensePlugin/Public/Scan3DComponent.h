@@ -8,10 +8,10 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 {
 	GENERATED_UCLASS_BODY()
 
-	// Array of RGBA color values representing a preview image displaying the
-	// current progress of scanning. This buffer will be empty until scanning
-	// has started.
-	UPROPERTY(BlueprintReadOnly, Category = "RealSense") TArray<FSimpleColor> ScanBuffer;
+		// Array of RGBA color values representing a preview image displaying the
+		// current progress of scanning. This buffer will be empty until scanning
+		// has started.
+		UPROPERTY(BlueprintReadOnly, Category = "RealSense") TArray<FSimpleColor> ScanBuffer;
 
 	// Convenient Texture2D object used to easily visualize the ScanBuffer. 
 	// This texture can be set by calling ColorBufferToTexture().
@@ -25,18 +25,18 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 
 	// Array of mesh vertex colors. This array is populated by the LoadScan() function.
 	UPROPERTY(BlueprintReadOnly, Category = "RealSense") TArray<FColor> Colors;
-	
+
 	// Triggered after a scan has been saved to disk. A call to SaveScan() will asynchronously
 	// save the scan. You can use this event to be notified when the scan has finished saving.
 	UPROPERTY(BlueprintAssignable, Category = "RealSense") FRealSenseNullaryDelegate OnScanComplete;
 
 	// Sets the scanning mode and options for 3D Scanning. After calling this function, 
 	// the scanning preview image will be available in the ScanBuffer.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") void ConfigureScanning(EScan3DMode ScanningMode, bool Solidify, bool Texture);
+	UFUNCTION(BlueprintCallable, Category = "RealSense") void ConfigureScanning(EScan3DMode ScanningMode, bool Solidify);
 
 	// Sets a 3D volume (in world space, relative to the camera) that the scanning module
 	// will use to scope the data it gathers. 
-	UFUNCTION(BlueprintCallable, Category = "RealSense") void SetScanningVolume(FVector BoundingBox, int32 Resolution);
+	//UFUNCTION(BlueprintCallable, Category = "RealSense") void SetScanningVolume(FVector BoundingBox, int32 Resolution);
 
 	// Allows the scanning process to begin. Scanning will not actually begin until
 	// the pre-requisites for the specified scanning mode have been met.
@@ -46,11 +46,11 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 	UFUNCTION(BlueprintCallable, Category = "RealSense") void StopScanning();
 
 	// Restarts the scanning process.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") void ResetScanning();	
+	UFUNCTION(BlueprintCallable, Category = "RealSense") void ResetScanning();
 
 	// Stops the scanning process and asynchronously saves the scanned data to a mesh file
 	// with the specified file format and file name.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") void SaveScan(EScan3DFileFormat SaveFileFormat, FString Filename);
+	UFUNCTION(BlueprintCallable, Category = "RealSense") void SaveScan(FString Filename);
 
 	// Opens the specified .OBJ file and loads the mesh information into this component's
 	// Vertices, Triangles, and Colors arrays.
@@ -60,12 +60,11 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 	// StartScanning() to know when the scanning process has begun.
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") bool IsScanning();
 
-	// Default constructor
 	UScan3DComponent();
 
 	// Adds the SCAN_3D feature to the RealSenseSessionManager and initializes the ScanTexture object.
 	void InitializeComponent() override;
-	
+
 	// Copies the ScanBuffer from the RealSenseSessionManager
 	void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 

@@ -13,7 +13,7 @@ URealSenseComponent::URealSenseComponent(const class FObjectInitializer& ObjInit
 // This function attempts to find a RealSenseSessionManager actor in the world and store
 // a reference to it. If the actor does not exist, a new RealSenseSessionManager is 
 // spawned and a reference to it is stored.
-void URealSenseComponent::InitializeComponent() 
+void URealSenseComponent::InitializeComponent()
 {
 	if (globalRealSenseSession == nullptr) {
 		for (TActorIterator<ARealSenseSessionManager> Itr(GetWorld()); Itr; ++Itr) {
@@ -21,13 +21,13 @@ void URealSenseComponent::InitializeComponent()
 		}
 		if (globalRealSenseSession == nullptr) {
 			RS_LOG(Log, "Creating RealSenseSessionManager Actor")
-			globalRealSenseSession = GetWorld()->SpawnActor<ARealSenseSessionManager>(ARealSenseSessionManager::StaticClass());
+				globalRealSenseSession = GetWorld()->SpawnActor<ARealSenseSessionManager>(ARealSenseSessionManager::StaticClass());
 		}
 	}
 }
 
 // Queries the camera model, firmware, and field of view information from the RealSense camera
-void URealSenseComponent::BeginPlay() 
+void URealSenseComponent::BeginPlay()
 {
 	CameraModel = globalRealSenseSession->GetCameraModel();
 	CameraFirmware = globalRealSenseSession->GetCameraFirmware();
@@ -37,11 +37,6 @@ void URealSenseComponent::BeginPlay()
 
 	DepthHorizontalFOV = globalRealSenseSession->GetDepthHorizontalFOV();
 	DepthVerticalFOV = globalRealSenseSession->GetDepthVerticalFOV();
-}
-
-bool URealSenseComponent::IsCameraConnected()
-{
-	return globalRealSenseSession->IsCameraConnected();
 }
 
 bool URealSenseComponent::IsCameraRunning()
@@ -58,13 +53,15 @@ FStreamResolution URealSenseComponent::GetDepthCameraResolution() {
 }
 
 void URealSenseComponent::SetColorCameraResolution(EColorResolution resolution) {
-	if (resolution != EColorResolution::UNDEFINED)
+	if (resolution != EColorResolution::UNDEFINED) {
 		globalRealSenseSession->SetColorCameraResolution(resolution);
+	}
 }
 
 void URealSenseComponent::SetDepthCameraResolution(EDepthResolution resolution) {
-	if (resolution != EDepthResolution::UNDEFINED)
+	if (resolution != EDepthResolution::UNDEFINED) {
 		globalRealSenseSession->SetDepthCameraResolution(resolution);
+	}
 }
 
 bool URealSenseComponent::IsStreamSetValid(EColorResolution CResolution, EDepthResolution DResolution) {

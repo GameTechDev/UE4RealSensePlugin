@@ -12,8 +12,8 @@ UCLASS() class URealSenseComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 
-	// Horizontal Field of View of the RealSense RGB Camera
-	UPROPERTY(BlueprintReadOnly, Category = "RealSense") float ColorHorizontalFOV;
+		// Horizontal Field of View of the RealSense RGB Camera
+		UPROPERTY(BlueprintReadOnly, Category = "RealSense") float ColorHorizontalFOV;
 
 	// Vertical Field of View of the RealSense RGB Camera
 	UPROPERTY(BlueprintReadOnly, Category = "RealSense") float ColorVerticalFOV;
@@ -40,7 +40,7 @@ UCLASS() class URealSenseComponent : public UActorComponent
 	UFUNCTION(BlueprintCallable, Category = "RealSense") void StopCamera();
 
 	// Returns true if there is a RealSense camera connected to this machine.
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") bool IsCameraConnected();
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") bool IsCameraConnected();
 
 	// Returns true if the RealSense camera processing thread is currently running.
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") bool IsCameraRunning();
@@ -61,8 +61,7 @@ UCLASS() class URealSenseComponent : public UActorComponent
 	// Call this function before setting either the color and depth camera resolutions to ensure that
 	// there will be no errors initializing the RealSense camera processing thread.
 	UFUNCTION(BlueprintCallable, Category = "RealSense") bool IsStreamSetValid(EColorResolution CResolution, EDepthResolution DResolution);
-	
-	// Default constructor
+
 	URealSenseComponent();
 
 	// When initialized, this component will check if a RealSenseSessionManager actor exists in the scene.
@@ -72,7 +71,7 @@ UCLASS() class URealSenseComponent : public UActorComponent
 
 	// Queries the camera model, firmware, and field of view data from the RealSense camera.
 	void BeginPlay() override;
-	
+
 protected:
 	// Reference to the global RealSenseSessionmanager actor
 	ARealSenseSessionManager* globalRealSenseSession;

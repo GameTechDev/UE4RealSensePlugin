@@ -12,10 +12,10 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 {
 	GENERATED_UCLASS_BODY()
 
-	// Array of RGBA color values representing a single frame of video captured 
-	// by the RealSense RGB camera at the resolution specified by calling 
-	// SetColorCameraResolution(). 
-	UPROPERTY(BlueprintReadOnly, Category = "RealSense") TArray<FSimpleColor> ColorBuffer;
+		// Array of RGBA color values representing a single frame of video captured 
+		// by the RealSense RGB camera at the resolution specified by calling 
+		// SetColorCameraResolution(). 
+		UPROPERTY(BlueprintReadOnly, Category = "RealSense") TArray<FSimpleColor> ColorBuffer;
 
 	// Array of depth values (in millimeters) stored as a single frame of video 
 	// captured by the RealSense depth camera at the resolution specified by 
@@ -35,16 +35,15 @@ UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSen
 	// Sets the resolution that the RealSense RGB camera should use. 
 	// This function must be called before StartCamera() in order to 
 	// enable the RGB camera.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") 
-	virtual void SetColorCameraResolution(EColorResolution Resolution) override;
+	UFUNCTION(BlueprintCallable, Category = "RealSense")
+		virtual void SetColorCameraResolution(EColorResolution Resolution) override;
 
 	// Sets the resolution that the RealSense depth camera should use. 
 	// This function must be called before StartCamera() in order to 
 	// enable the depth camera.
 	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	virtual void SetDepthCameraResolution(EDepthResolution Resolution) override;
+		virtual void SetDepthCameraResolution(EDepthResolution Resolution) override;
 
-	// Default Constructor
 	UCameraStreamComponent();
 
 	// Adds the CAMERA_STREAMING feature to the RealSenseSessionManager and

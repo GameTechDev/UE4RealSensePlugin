@@ -59,24 +59,20 @@ UENUM(BlueprintType) enum class ERealSensePixelFormat : uint8 {
 UENUM(BlueprintType) enum class ECameraModel : uint8 {
 	None = 0 UMETA(DisplayName = " "),
 	F200 = 1 UMETA(DisplayName = "Front-Facing (F200)"),
-	R200 = 2 UMETA(DisplayName = "World-Facing (R200)"),
-	Other = 3 UMETA(DisplayName = "Unknown Camera Model")
+	SR300 = 2 UMETA(DisplayName = "Short-Range (SR300)"),
+	R200 = 3 UMETA(DisplayName = "World-Facing (R200)"),
+	Other = 4 UMETA(DisplayName = "Unknown Camera Model")
 };
 
 // Supported modes for the 3D Scanning middleware
 UENUM(BlueprintType) enum class EScan3DMode : uint8 {
 	OBJECT = 0 UMETA(DisplayName = "Object"),
 	FACE = 1 UMETA(DisplayName = "Face")
-//	HEAD = 3 UMETA(DisplayName = "Head"),
-//	BODY = 4 UMETA(DisplayName = "Body")
-//	VARIABLE = 0 UMETA(DisplayName = "Variable"),
 };
 
 // File types supported by the 3D Scanning middleware for saving scans 
 UENUM(BlueprintType) enum class EScan3DFileFormat : uint8 {
 	OBJ = 0 UMETA(DisplayName = "OBJ"),
-//	PLY = 1 UMETA(DisplayName = "PLY"),
-//	STL = 2 UMETA(DisplayName = "STL")
 };
 
 // Basic 32-bit color structure (RGBA) 
@@ -107,90 +103,4 @@ USTRUCT(BlueprintType) struct FStreamResolution
 	float fps;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ERealSensePixelFormat format;
-};
-
-UENUM(BlueprintType) enum class FaceStatusDetected : uint8
-{
-	Detected,
-	NotDetected,
-	Undefined
-};
-
-UENUM(BlueprintType) enum class FaceStatusXAxis : uint8
-{
-	InRange,
-	TooFarLeft,
-	TooFarRight,
-	Undefined
-};
-
-UENUM(BlueprintType) enum class FaceStatusYAxis : uint8
-{
-	InRange,
-	TooFarUp,
-	TooFarDown,
-	Undefined
-};
-
-UENUM(BlueprintType) enum class FaceStatusZAxis : uint8
-{
-	InRange,
-	TooClose,
-	TooFar,
-	Undefined
-};
-
-UENUM(BlueprintType) enum class FaceStatusYaw : uint8
-{
-	InRange,
-	TooFarLeft,
-	TooFarRight,
-	Undefined
-};
-
-UENUM(BlueprintType) enum class FaceStatusPitch : uint8
-{
-	InRange,
-	TooFarUp,
-	TooFarDown,
-	Undefined
-};
-
-// Convenient structure for storing the "center" of a plane 
-// along with the plane equation
-USTRUCT(BlueprintType) struct FTrackedPlane
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPlane equation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector center;
-};
-
-USTRUCT(BlueprintType) struct FFacePrerequisites
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusDetected FaceDetected = { FaceStatusDetected::Undefined };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusXAxis XInRange = { FaceStatusXAxis::Undefined };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusYAxis YInRange = { FaceStatusYAxis::Undefined };
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusZAxis ZInRange = { FaceStatusZAxis::Undefined };
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusPitch PitchInRange = { FaceStatusPitch::Undefined };
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FaceStatusYaw YawInRange = { FaceStatusYaw::Undefined };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool Satisfied = { false };
 };
