@@ -8,6 +8,7 @@ Content/*.obj
 *.sdf
 *.sln
 *.suo
+*.opensdf
 
 Plugins/RealSensePlugin/Binaries/
 Plugins/RealSensePlugin/Intermediate/
