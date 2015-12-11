@@ -39,11 +39,6 @@ void URealSenseComponent::BeginPlay()
 	DepthVerticalFOV = globalRealSenseSession->GetDepthVerticalFOV();
 }
 
-//bool URealSenseComponent::IsCameraConnected()
-//{
-//	return globalRealSenseSession->IsCameraConnected();
-//}
-
 bool URealSenseComponent::IsCameraRunning()
 {
 	return globalRealSenseSession->IsCameraRunning();
@@ -58,13 +53,15 @@ FStreamResolution URealSenseComponent::GetDepthCameraResolution() {
 }
 
 void URealSenseComponent::SetColorCameraResolution(EColorResolution resolution) {
-	if (resolution != EColorResolution::UNDEFINED)
+	if (resolution != EColorResolution::UNDEFINED) {
 		globalRealSenseSession->SetColorCameraResolution(resolution);
+	}
 }
 
 void URealSenseComponent::SetDepthCameraResolution(EDepthResolution resolution) {
-	if (resolution != EDepthResolution::UNDEFINED)
+	if (resolution != EDepthResolution::UNDEFINED) {
 		globalRealSenseSession->SetDepthCameraResolution(resolution);
+	}
 }
 
 bool URealSenseComponent::IsStreamSetValid(EColorResolution CResolution, EDepthResolution DResolution) {

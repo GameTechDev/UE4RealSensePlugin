@@ -6,8 +6,6 @@
 #include <fstream>
 #include "HideWindowsPlatformTypes.h"
 
-#include "CoreMisc.h"
-
 #include "RealSenseTypes.h"
 #include "RealSenseUtils.h"
 #include "PXCSenseManager.h"
@@ -59,9 +57,7 @@ public:
 
 	inline bool IsCameraThreadRunning() const { return cameraThreadRunning.load(); }
 
-	/* 
-	 * Core SDK Support 
-	 */
+	// Core SDK Support
 
 	// Enables the middleware specified by the input feature set and creates
 	// handles to the necessary RSSDK objects. 
@@ -103,9 +99,7 @@ public:
 
 	inline const uint16* GetDepthBuffer() const { return fgFrame->depthImage.GetData(); }
 
-	/* 
-	 * 3D Scanning Module Support 
-	 */
+	// 3D Scanning Module Support 
 
 	bool ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture);
 

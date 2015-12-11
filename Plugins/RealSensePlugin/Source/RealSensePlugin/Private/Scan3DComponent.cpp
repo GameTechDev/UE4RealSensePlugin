@@ -10,8 +10,9 @@ void UScan3DComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	
-	if (globalRealSenseSession != nullptr) 
+	if (globalRealSenseSession != nullptr) {
 		globalRealSenseSession->AddRealSenseFeature(RealSenseFeature::SCAN_3D);
+	}
 
 	ScanTexture = UTexture2D::CreateTransient(1, 1,	EPixelFormat::PF_B8G8R8A8);
 	ClearTexture(ScanTexture, FColor(0, 0, 0, 0));
@@ -80,11 +81,6 @@ void UScan3DComponent::LoadScan(FString Filename)
 	Filename = FPaths::GameContentDir().Append(Filename);
 	globalRealSenseSession->LoadScan(Filename, Vertices, Triangles, Colors);
 }
-
-//void UScan3DComponent::SetScanningVolume(FVector BoundingBox, int32 Resolution)
-//{
-//	globalRealSenseSession->SetScanningVolume(BoundingBox, Resolution);
-//}
 
 bool UScan3DComponent::IsScanning() 
 {

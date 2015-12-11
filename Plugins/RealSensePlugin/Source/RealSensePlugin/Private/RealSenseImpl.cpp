@@ -105,13 +105,6 @@ RealSenseImpl::~RealSenseImpl()
 		cameraThreadRunning.store(false);
 		cameraThread.join();
 	}
-
-//	if (device != nullptr)
-//		device->Release();
-
-//	capture->Release();
-//	senseManager->Release();
-//	session->Release();
 }
 
 // Camera Processing Thread
@@ -145,6 +138,7 @@ void RealSenseImpl::CameraThread()
 		// Loads shared settings
 		colorStreamingEnabled.load();
 		depthStreamingEnabled.load();
+
 		scan3DEnabled.load();
 		scanStarted.load();
 		scanStopped.load();
@@ -348,10 +342,12 @@ bool RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, b
 	config.mode = ERealSenseScanModeToPXCScanMode(scanningMode);
 
 	config.options = PXC3DScan::ReconstructionOption::NONE;
-	if (solidify)
+	if (solidify) {
 		config.options = config.options | PXC3DScan::ReconstructionOption::SOLIDIFICATION;
-	if (texture)
+	}
+	if (texture) {
 		config.options = config.options | PXC3DScan::ReconstructionOption::TEXTURE;
+	}
 
 	config.startScan = false;
 
@@ -429,13 +425,6 @@ void RealSenseImpl::LoadScan(const FString& filename, TArray<FVector>& Vertices,
 	if (!file.is_open())
 		return;
 	
-
-//	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-//	IFileHandle* FileHandle = PlatformFile.OpenRead(filename.GetCharArray().GetData(), false);
-
-//	if (FileHandle == nullptr)
-//		return;
-
 	float x, y, z, r, g, b = 0.0f;
 	int v1, v2, v3, n1, n2, n3 = 0;
 	std::string line;

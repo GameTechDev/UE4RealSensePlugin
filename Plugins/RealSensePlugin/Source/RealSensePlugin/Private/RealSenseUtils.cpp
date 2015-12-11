@@ -16,15 +16,18 @@ uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width)
 {
 	// The F200 and R200 cameras support different maximum depths.
 	float max_depth = 0.0f;
-	if (width == 640)
+	if (width == 640) {
 		max_depth = 1000.0f; // 1 meter
-	else
+	}
+	else {
 		max_depth = 3000.0f; // 3 meters
+	}
 
 	// A depth value of 0 indicates no data available.
 	// This value will be mapped to the color black.
-	if (depth == 0)
+	if (depth == 0) {
 		return 0;
+	}
 
 	return (255 * ((max_depth - depth) / max_depth));
 }
@@ -148,7 +151,6 @@ void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 w
 	pxcStatus result = image->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PIXEL_FORMAT_RGB24, &imageData);
 	if (result != PXC_STATUS_NO_ERROR) {
 		return;
-
 	}
 
 	uint32 i = 0;
