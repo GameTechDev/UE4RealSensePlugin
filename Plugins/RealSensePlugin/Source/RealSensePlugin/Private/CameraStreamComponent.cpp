@@ -1,10 +1,13 @@
 #include "RealSensePluginPrivatePCH.h"
 #include "CameraStreamComponent.h"
 
-UCameraStreamComponent::UCameraStreamComponent(const class FObjectInitializer& ObjInit) : Super(ObjInit) 
+UCameraStreamComponent::UCameraStreamComponent(const class FObjectInitializer& ObjInit) 
+	: Super(ObjInit) 
 { 
 }
 
+// Adds the CAMERA_STREAMING feature to the RealSenseSessionManager and
+// initializes the ColorTexture and DepthTexture objects.
 void UCameraStreamComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
@@ -14,14 +17,12 @@ void UCameraStreamComponent::InitializeComponent()
 	}
 
 	ColorTexture = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
-	ClearTexture(ColorTexture, FColor(0, 0, 0, 0));
-
 	DepthTexture = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
-	ClearTexture(DepthTexture, FColor(0, 0, 0, 0));
 }
 
 // Copies the ColorBuffer and DepthBuffer from the RealSenseSessionManager.
-void UCameraStreamComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+void UCameraStreamComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, 
+	                                       FActorComponentTickFunction *ThisTickFunction)
 {
 	if (globalRealSenseSession->IsCameraRunning() == false) {
 		return;
@@ -42,8 +43,9 @@ void UCameraStreamComponent::SetColorCameraResolution(EColorResolution resolutio
 
 	Super::SetColorCameraResolution(resolution);
 
-	ColorTexture = UTexture2D::CreateTransient(globalRealSenseSession->GetColorImageWidth(), 
-		                                       globalRealSenseSession->GetColorImageHeight(), 
+	int ColorImageWidth = globalRealSenseSession->GetColorImageWidth();
+	int ColorImageHeight = globalRealSenseSession->GetColorImageHeight();
+	ColorTexture = UTexture2D::CreateTransient(ColorImageWidth, ColorImageHeight,
 											   PF_B8G8R8A8);
 	ColorTexture->UpdateResource();
 }
@@ -59,8 +61,9 @@ void UCameraStreamComponent::SetDepthCameraResolution(EDepthResolution resolutio
 
 	Super::SetDepthCameraResolution(resolution);
 	
-	DepthTexture = UTexture2D::CreateTransient(globalRealSenseSession->GetDepthImageWidth(), 
-		                                       globalRealSenseSession->GetDepthImageHeight(), 
+	int DepthImageWidth = globalRealSenseSession->GetDepthImageWidth();
+	int DepthImageHeight = globalRealSenseSession->GetDepthImageHeight();
+	DepthTexture = UTexture2D::CreateTransient(DepthImageWidth, DepthImageHeight, 
 											   PF_B8G8R8A8);
 	DepthTexture->UpdateResource();
 }

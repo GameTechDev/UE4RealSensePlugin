@@ -183,9 +183,9 @@ TArray<FSimpleColor> ARealSenseSessionManager::GetScanBuffer() const
 	return ScanBuffer; 
 }
 
-void ARealSenseSessionManager::ConfigureScanning(EScan3DMode ScanningMode, bool Solidify, bool Texture)
+void ARealSenseSessionManager::ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify, bool Texture)
 {
-	impl->ConfigureScanning(ScanningMode, Solidify, Texture);
+	impl->ConfigureScanning(ScanningMode, bSolidify, Texture);
 }
 
 void ARealSenseSessionManager::StartScanning()

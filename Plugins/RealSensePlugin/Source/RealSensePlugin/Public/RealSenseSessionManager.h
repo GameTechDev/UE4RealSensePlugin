@@ -95,7 +95,7 @@ class ARealSenseSessionManager : public AActor
 	//
 	// If texture is true, the middleware will create a texture file along with
 	// the mesh. If false, the mesh file will be include vertex color information.
-	void ConfigureScanning(EScan3DMode ScanningMode, bool Solidify, bool Texture);
+	void ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify, bool Texture);
 
 	// Only use this function if 3D Scanning is set to Variable mode.
 	// Sets the bounding box of the 3D space in which you wish to scan

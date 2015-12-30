@@ -1,12 +1,15 @@
 #include "RealSensePluginPrivatePCH.h"
 #include "Scan3DComponent.h"
 
-UScan3DComponent::UScan3DComponent(const class FObjectInitializer& ObjInit) : Super(ObjInit) 
+UScan3DComponent::UScan3DComponent(const class FObjectInitializer& ObjInit) 
+	: Super(ObjInit) 
 { 
+	bHasScanStarted = false;
 }
 
-// Adds the SCAN_3D feature to the RealSenseSessionManager
-void UScan3DComponent::InitializeComponent() 
+// Adds the SCAN_3D feature to the RealSenseSessionManager and initializes the 
+// ScanTexture object.
+void UScan3DComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	
@@ -15,17 +18,12 @@ void UScan3DComponent::InitializeComponent()
 	}
 
 	ScanTexture = UTexture2D::CreateTransient(1, 1,	EPixelFormat::PF_B8G8R8A8);
-	ClearTexture(ScanTexture, FColor(0, 0, 0, 0));
-}
-
-void UScan3DComponent::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 // Copies the ScanBuffer and checks if a current scan has just completed.
 // If it has, the OnScanComplete event is broadcast.
-void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) 
+void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, 
+	                                 FActorComponentTickFunction *ThisTickFunction) 
 {
 	if (globalRealSenseSession->IsCameraRunning() == false) {
 		return;
@@ -35,29 +33,30 @@ void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 	// middleware, so it is important to check every tick if the image size
 	// has changed so that the ScanTexture object can be resized to match.
 	if (globalRealSenseSession->HasScan3DImageSizeChanged()) {
-		ScanTexture = UTexture2D::CreateTransient(globalRealSenseSession->GetScan3DImageWidth(),
-									  			  globalRealSenseSession->GetScan3DImageHeight(),
-												  EPixelFormat::PF_B8G8R8A8);
+		int Scan3DImageWidth = globalRealSenseSession->GetScan3DImageWidth();
+		int Scan3DImageHeight = globalRealSenseSession->GetScan3DImageHeight();
+		ScanTexture = UTexture2D::CreateTransient(Scan3DImageWidth, Scan3DImageHeight,
+											      EPixelFormat::PF_B8G8R8A8);
 		ScanTexture->UpdateResource();
 	}
 
 	ScanBuffer = globalRealSenseSession->GetScanBuffer();
 
-	if (globalRealSenseSession->HasScanCompleted() && HasScanStarted) {
+	if (globalRealSenseSession->HasScanCompleted() && bHasScanStarted) {
 		OnScanComplete.Broadcast();
-		HasScanStarted = false;
+		bHasScanStarted = false;
 	}
 }
 
-void UScan3DComponent::ConfigureScanning(EScan3DMode ScanningMode, bool Solidify)
+void UScan3DComponent::ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify)
 {
-	globalRealSenseSession->ConfigureScanning(ScanningMode, Solidify, false);
+	globalRealSenseSession->ConfigureScanning(ScanningMode, bSolidify, false);
 }
 
 void UScan3DComponent::StartScanning()
 {
 	globalRealSenseSession->StartScanning();
-	HasScanStarted = true;
+	bHasScanStarted = true;
 }
 
 void UScan3DComponent::StopScanning()

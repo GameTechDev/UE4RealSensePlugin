@@ -58,11 +58,11 @@ RealSenseImpl::RealSenseImpl()
 	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
 
 	RealSenseFeatureSet = 0;
-	colorStreamingEnabled.store(false);
-	depthStreamingEnabled.store(false);
-	scan3DEnabled.store(false);
+	bColorStreamingEnabled.store(false);
+	bDepthStreamingEnabled.store(false);
+	bScan3DEnabled.store(false);
 
-	cameraThreadRunning.store(false);
+	bCameraThreadRunning.store(false);
 
 	fgFrame = std::unique_ptr<RealSenseDataFrame>(new RealSenseDataFrame());
 	midFrame = std::unique_ptr<RealSenseDataFrame>(new RealSenseDataFrame());
@@ -89,20 +89,20 @@ RealSenseImpl::RealSenseImpl()
 	scan3DResolution = {};
 	scan3DFileFormat = PXC3DScan::FileFormat::OBJ;
 
-	scanStarted.store(false);
-	scanStopped.store(false);
-	reconstructEnabled.store(false);
-	scanCompleted.store(false);
-	scan3DImageSizeChanged.store(false);
+	bScanStarted.store(false);
+	bScanStopped.store(false);
+	bReconstructEnabled.store(false);
+	bScanCompleted.store(false);
+	bScan3DImageSizeChanged.store(false);
 }
 
 // Terminate the camera thread and release the Core SDK handles.
 // SDK Module handles are handled internally and should not be released manually.
 RealSenseImpl::~RealSenseImpl() 
 {
-	cameraThreadRunning.load();
-	if (cameraThreadRunning) {
-		cameraThreadRunning.store(false);
+	bCameraThreadRunning.load();
+	if (bCameraThreadRunning) {
+		bCameraThreadRunning.store(false);
 		cameraThread.join();
 	}
 }
@@ -127,7 +127,7 @@ void RealSenseImpl::CameraThread()
 	if (status < PXC_STATUS_NO_ERROR)
 		return;
 
-	while (cameraThreadRunning.load() == true) {
+	while (bCameraThreadRunning.load() == true) {
 		// Acquires new camera frame
 		status = senseManager->AcquireFrame(true);
 		if (status != PXC_STATUS_NO_ERROR)
@@ -136,39 +136,39 @@ void RealSenseImpl::CameraThread()
 		bgFrame->number = ++currentFrame;
 
 		// Loads shared settings
-		colorStreamingEnabled.load();
-		depthStreamingEnabled.load();
+		bColorStreamingEnabled.load();
+		bDepthStreamingEnabled.load();
 
-		scan3DEnabled.load();
-		scanStarted.load();
-		scanStopped.load();
-		reconstructEnabled.load();
+		bScan3DEnabled.load();
+		bScanStarted.load();
+		bScanStopped.load();
+		bReconstructEnabled.load();
 
 		PXCCapture::Sample* sample = senseManager->QuerySample();
 
 		// Performs Core SDK and middleware processing and store results 
 		// in background RealSenseDataFrame
-		if (colorStreamingEnabled && (sample->color != nullptr)) {
+		if (bColorStreamingEnabled && (sample->color != nullptr)) {
 			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
 		}
 
-		if (depthStreamingEnabled && (sample->depth != nullptr)) {
+		if (bDepthStreamingEnabled && (sample->depth != nullptr)) {
 			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
 		}
 
-		if (scan3DEnabled) {
-			if (scanStarted) {
+		if (bScan3DEnabled) {
+			if (bScanStarted) {
 				PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
 				config.startScan = true;
 				p3DScan->SetConfiguration(config);
-				scanStarted.store(false);
+				bScanStarted.store(false);
 			}
 
-			if (scanStopped) {
+			if (bScanStopped) {
 				PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
 				config.startScan = false;
 				p3DScan->SetConfiguration(config);
-				scanStopped.store(false);
+				bScanStopped.store(false);
 			}
 
 			PXCImage* scanImage = p3DScan->AcquirePreviewImage();
@@ -178,10 +178,10 @@ void RealSenseImpl::CameraThread()
 				scanImage->Release();
 			}
 			
-			if (reconstructEnabled) {
+			if (bReconstructEnabled) {
 				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
-				reconstructEnabled.store(false);
-				scanCompleted.store(true);
+				bReconstructEnabled.store(false);
+				bScanCompleted.store(true);
 			}
 		}
 		
@@ -196,8 +196,8 @@ void RealSenseImpl::CameraThread()
 // If it is not already running, starts a new camera processing thread
 void RealSenseImpl::StartCamera() 
 {
-	if (cameraThreadRunning.load() == false) {
-		cameraThreadRunning.store(true);
+	if (bCameraThreadRunning.load() == false) {
+		bCameraThreadRunning.store(true);
 		cameraThread = std::thread([this]() { CameraThread(); });
 	}
 }
@@ -207,8 +207,8 @@ void RealSenseImpl::StartCamera()
 // previously specified feature set).
 void RealSenseImpl::StopCamera() 
 {
-	if (cameraThreadRunning.load() == true) {
-		cameraThreadRunning.store(false);
+	if (bCameraThreadRunning.load() == true) {
+		bCameraThreadRunning.store(false);
 		cameraThread.join();
 	}
 	senseManager->Close();
@@ -236,13 +236,13 @@ void RealSenseImpl::EnableRealSenseFeatures(uint32 featureSet)
 
 	RealSenseFeatureSet = featureSet;
 	if (featureSet & RealSenseFeature::CAMERA_STREAMING) {
-		colorStreamingEnabled.store(true);
-		depthStreamingEnabled.store(true);
+		bColorStreamingEnabled.store(true);
+		bDepthStreamingEnabled.store(true);
 	}
 	if (featureSet & RealSenseFeature::SCAN_3D) {
 		senseManager->Enable3DScan();
 		p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(senseManager->Query3DScan());
-		scan3DEnabled.store(true);
+		bScan3DEnabled.store(true);
 	}
 }
 
@@ -335,7 +335,7 @@ bool RealSenseImpl::IsStreamSetValid(EColorResolution ColorResolution, EDepthRes
 // Creates a new configuration for the 3D Scanning module, specifying the
 // scanning mode, solidify, and texture options, and initializing the 
 // startScan flag to false to postpone the start of scanning.
-bool RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture) 
+void RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture) 
 {
 	PXC3DScan::Configuration config = {};
 
@@ -351,11 +351,10 @@ bool RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool solidify, b
 
 	config.startScan = false;
 
-	scan3DEnabled.store(true);
+	bScan3DEnabled.store(true);
 
 	status = p3DScan->SetConfiguration(config);
 	RS_LOG_STATUS(status, "Scan3D Configure Scanning")
-	return (status == PXC_STATUS_NO_ERROR);
 }
 
 // Manually sets the 3D volume in which the 3D scanning module will collect
@@ -377,8 +376,8 @@ void RealSenseImpl::SetScanningVolume(FVector boundingBox, int32 resolution)
 // to begin scanning.
 void RealSenseImpl::StartScanning() 
 {
-	scanStarted.store(true);
-	scanCompleted.store(false);
+	bScanStarted.store(true);
+	bScanCompleted.store(false);
 }
 
 // Sets the scanStopped flag to true. On the next iteration of the camera
@@ -386,16 +385,16 @@ void RealSenseImpl::StartScanning()
 // to stop scanning.
 void RealSenseImpl::StopScanning()
 {
-	scanStopped.store(true);
+	bScanStopped.store(true);
 }
 
 // Manually resets the scanning process by querying for the current 3D Scanning
 // configuration and setting the configuration with the result.
 void RealSenseImpl::ResetScanning()
 {
-	scan3DEnabled.store(false);
+	bScan3DEnabled.store(false);
 	p3DScan->SetConfiguration(p3DScan->QueryConfiguration());
-	scan3DEnabled.store(true);
+	bScan3DEnabled.store(true);
 }
 
 // Stores the file format and filename to use for saving the scan and sets the
@@ -405,7 +404,7 @@ void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, const FString& fi
 {
 	scan3DFileFormat = static_cast<PXC3DScan::FileFormat> (saveFileFormat);
 	scan3DFilename = filename;
-	reconstructEnabled.store(true);
+	bReconstructEnabled.store(true);
 }
 
 // Loads the specified mesh file (.obj) into memory and parses it to extract the 
@@ -415,31 +414,53 @@ void RealSenseImpl::SaveScan(EScan3DFileFormat saveFileFormat, const FString& fi
 // moves all vertices to be centered about that point.
 void RealSenseImpl::LoadScan(const FString& filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors)
 {
+	// TODO: Check if Reserving Lines ahead of time is faster
+	TArray<FString> Lines;
+	if (FFileHelper::LoadANSITextFileToStrings(filename.GetCharArray().GetData(), NULL, Lines) == false)
+		return;
+
 	Vertices.Empty();
 	Triangles.Empty();
 	Colors.Empty();
 
-	std::ifstream file;
-	file.open(filename.GetCharArray().GetData());
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
 
-	if (!file.is_open())
-		return;
-	
-	float x, y, z, r, g, b = 0.0f;
-	int v1, v2, v3, n1, n2, n3 = 0;
-	std::string line;
+	int v1 = 0;
+	int v2 = 0;
+	int v3 = 0;
 
-	while (std::getline(file, line)) {
-		if (line[0] == 'v') {
-			if (line[1] == ' ') {
-				sscanf_s(line.substr(2).c_str(), "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
+	TArray<FString> Tokens;
+
+	for (FString Line : Lines) {
+		if (Line.IsEmpty()) {
+			continue;
+		}
+		else if (Line[0] == 'v') {
+			if (Line[1] == ' ') {
+				Tokens.Empty();
+				Line.ParseIntoArrayWS(Tokens, L"", true);
+				x = FCString::Atof(*(Tokens[1]));
+				y = FCString::Atof(*(Tokens[2]));
+				z = FCString::Atof(*(Tokens[3]));
+				r = FCString::Atof(*(Tokens[4]));
+				g = FCString::Atof(*(Tokens[5]));
+				b = FCString::Atof(*(Tokens[6]));
 				Vertices.Add(ConvertRSVectorToUnreal(FVector(x, y, z)) * 150);
 				Colors.Add(FColor((uint8)(r * 255), (uint8)(g * 255), (uint8)(b * 255)));
 			}
 		}
-		else if (line[0] == 'f') {
-			sscanf_s(line.substr(1).c_str(), "%d//%d %d//%d %d//%d", &v1, &n1, &v2, &n2, &v3, &n3);
+		else if (Line[0] == 'f') {
+			Tokens.Empty();
+			Line.ParseIntoArrayWS(Tokens, L"//", true);
 			// Need to subtract 1 from the vertex indices because .OBJ files start indexing them at at 1, not 0
+			v1 = FCString::Atoi(*(Tokens[1]));
+			v2 = FCString::Atoi(*(Tokens[3]));
+			v3 = FCString::Atoi(*(Tokens[5]));
 			Triangles.Add(v1 - 1);
 			Triangles.Add(v2 - 1);
 			Triangles.Add(v3 - 1);
@@ -478,5 +499,5 @@ void RealSenseImpl::UpdateScan3DImageSize(PXCImage::ImageInfo info)
 	midFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
 	fgFrame->scanImage.SetNumZeroed(scan3DResolution.width * scan3DResolution.height * bytesPerPixel);
 
-	scan3DImageSizeChanged.store(true);
+	bScan3DImageSizeChanged.store(true);
 }

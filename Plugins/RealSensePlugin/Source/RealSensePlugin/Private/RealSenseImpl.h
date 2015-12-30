@@ -2,10 +2,9 @@
 
 #include "AllowWindowsPlatformTypes.h"
 #include <future>
-#include <iostream>
-#include <fstream>
 #include "HideWindowsPlatformTypes.h"
 
+#include "CoreMisc.h"
 #include "RealSenseTypes.h"
 #include "RealSenseUtils.h"
 #include "PXCSenseManager.h"
@@ -55,7 +54,7 @@ public:
 	// foreground frame.
 	void SwapFrames();
 
-	inline bool IsCameraThreadRunning() const { return cameraThreadRunning.load(); }
+	inline bool IsCameraThreadRunning() const { return bCameraThreadRunning.load(); }
 
 	// Core SDK Support
 
@@ -101,7 +100,7 @@ public:
 
 	// 3D Scanning Module Support 
 
-	bool ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture);
+	void ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture);
 
 	void SetScanningVolume(FVector boundingBox, int32 resolution);
 
@@ -125,9 +124,9 @@ public:
 
 	inline const uint8* GetScanBuffer() const { return fgFrame->scanImage.GetData(); }
 
-	inline bool HasScan3DImageSizeChanged() const { return scan3DImageSizeChanged.load(); }
+	inline bool HasScan3DImageSizeChanged() const { return bScan3DImageSizeChanged.load(); }
 
-	inline bool HasScanCompleted() const { return scanCompleted.load(); }
+	inline bool HasScanCompleted() const { return bScanCompleted.load(); }
 
 private:
 	// Core SDK handles
@@ -155,14 +154,14 @@ private:
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
 
-	std::atomic_bool colorStreamingEnabled;
-	std::atomic_bool depthStreamingEnabled;
-	std::atomic_bool scan3DEnabled;
+	std::atomic_bool bColorStreamingEnabled;
+	std::atomic_bool bDepthStreamingEnabled;
+	std::atomic_bool bScan3DEnabled;
 
 	// Camera processing members
 
 	std::thread cameraThread;
-	std::atomic_bool cameraThreadRunning;
+	std::atomic_bool bCameraThreadRunning;
 
 	std::unique_ptr<RealSenseDataFrame> fgFrame;
 	std::unique_ptr<RealSenseDataFrame> midFrame;
@@ -188,11 +187,11 @@ private:
 	PXC3DScan::FileFormat scan3DFileFormat;
 	FString scan3DFilename;
 
-	std::atomic_bool scanStarted;
-	std::atomic_bool scanStopped;
-	std::atomic_bool reconstructEnabled;
-	std::atomic_bool scanCompleted;
-	std::atomic_bool scan3DImageSizeChanged;
+	std::atomic_bool bScanStarted;
+	std::atomic_bool bScanStopped;
+	std::atomic_bool bReconstructEnabled;
+	std::atomic_bool bScanCompleted;
+	std::atomic_bool bScan3DImageSizeChanged;
 
 	// Helper Functions
 
