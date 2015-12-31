@@ -64,11 +64,6 @@ void UScan3DComponent::StopScanning()
 	globalRealSenseSession->StopScanning();
 }
 
-void UScan3DComponent::ResetScanning()
-{
-	globalRealSenseSession->ResetScanning();
-}
-
 void UScan3DComponent::SaveScan(FString Filename)
 {
 	Filename = FPaths::GameContentDir().Append(Filename);

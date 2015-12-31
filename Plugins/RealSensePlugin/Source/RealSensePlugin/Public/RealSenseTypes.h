@@ -1,17 +1,16 @@
 #pragma once
 
-#include "PXCImage.h"
 #include "RealSenseTypes.generated.h"
 
 // List of features provided by the RealSense SDK
-enum RealSenseFeature : uint32 {
+enum RealSenseFeature : uint8 {
 	CAMERA_STREAMING = 0x1,
 	SCAN_3D = 0x2,
-	SCENE_PERCEPTION = 0x4,
 };
 
 // Resolutions supported by the RealSense RGB camera
-UENUM(BlueprintType) enum class EColorResolution : uint8 {
+UENUM(BlueprintType) 
+enum class EColorResolution : uint8 {
 	UNDEFINED = 0 UMETA(DisplayName = " "),
 	RES1 = 1 UMETA(DisplayName = "1920 x 1080 x 30"),
 	RES2 = 2 UMETA(DisplayName = "1280 x 720 x 30"),
@@ -24,7 +23,8 @@ UENUM(BlueprintType) enum class EColorResolution : uint8 {
 // Resolutions supported by the RealSense depth camera
 // (F200) denotes that this resolution is only supported by the F200 camera.
 // (R200) denotes that this resolution is only supported by the R200 camera.
-UENUM(BlueprintType) enum class EDepthResolution : uint8 {
+UENUM(BlueprintType) 
+enum class EDepthResolution : uint8 {
 	UNDEFINED = 0 UMETA(DisplayName = " "),
 	RES1 = 1 UMETA(DisplayName = "640 x 480 x 60 (F200)"),
 	RES2 = 2 UMETA(DisplayName = "640 x 480 x 30 (F200)"),
@@ -40,22 +40,16 @@ UENUM(BlueprintType) enum class EDepthResolution : uint8 {
 };
 
 // RSSDK Pixel Format exposed to Blueprint (see pxcimage.h)
-UENUM(BlueprintType) enum class ERealSensePixelFormat : uint8 {
+UENUM(BlueprintType) 
+enum class ERealSensePixelFormat : uint8 {
 	PIXEL_FORMAT_ANY = 0,  // Unknown/undefined
-	COLOR_RGB24,    // BGR layout
 	COLOR_RGB32,    // BGRA layout
-	COLOR_Y8,       // 8-Bit Grayscale
-	COLOR_YUY2,
-	COLOR_NV12,
 	DEPTH_G16_MM,   // 16-bit unsigned integer with precision mm.
-	DEPTH_G16_RAW,  // 16-bit unsigned integer with device specific precision (call device->QueryDepthUnit()) */
-	DEPTH_F32_MM,   // 32-bit float-point with precision mm. */
-	IR_Y16,         // 16-Bit Grayscale
-	IR_RELATIVE_Y8  // Relative IR Image
 };
 
 // Supported RealSense camera models
-UENUM(BlueprintType) enum class ECameraModel : uint8 {
+UENUM(BlueprintType) 
+enum class ECameraModel : uint8 {
 	None = 0 UMETA(DisplayName = " "),
 	F200 = 1 UMETA(DisplayName = "Front-Facing (F200)"),
 	SR300 = 2 UMETA(DisplayName = "Short-Range (SR300)"),
@@ -64,18 +58,21 @@ UENUM(BlueprintType) enum class ECameraModel : uint8 {
 };
 
 // Supported modes for the 3D Scanning middleware
-UENUM(BlueprintType) enum class EScan3DMode : uint8 {
+UENUM(BlueprintType) 
+enum class EScan3DMode : uint8 {
 	OBJECT = 0 UMETA(DisplayName = "Object"),
 	FACE = 1 UMETA(DisplayName = "Face")
 };
 
 // File types supported by the 3D Scanning middleware for saving scans 
-UENUM(BlueprintType) enum class EScan3DFileFormat : uint8 {
+UENUM(BlueprintType) 
+enum class EScan3DFileFormat : uint8 {
 	OBJ = 0 UMETA(DisplayName = "OBJ")
 };
 
 // Basic 32-bit color structure (RGBA) 
-USTRUCT(BlueprintType) struct FSimpleColor
+USTRUCT(BlueprintType) 
+struct FSimpleColor
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -90,7 +87,8 @@ USTRUCT(BlueprintType) struct FSimpleColor
 };
 
 // Resolution of a RealSense camera stream
-USTRUCT(BlueprintType) struct FStreamResolution
+USTRUCT(BlueprintType) 
+struct FStreamResolution
 {
 	GENERATED_USTRUCT_BODY()
 

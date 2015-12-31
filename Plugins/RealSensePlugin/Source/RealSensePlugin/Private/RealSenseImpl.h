@@ -2,6 +2,7 @@
 
 #include "AllowWindowsPlatformTypes.h"
 #include <future>
+#include <assert.h>
 #include "HideWindowsPlatformTypes.h"
 
 #include "CoreMisc.h"
@@ -54,7 +55,7 @@ public:
 	// foreground frame.
 	void SwapFrames();
 
-	inline bool IsCameraThreadRunning() const { return bCameraThreadRunning.load(); }
+	inline bool IsCameraThreadRunning() const { return bCameraThreadRunning; }
 
 	// Core SDK Support
 
@@ -64,13 +65,13 @@ public:
 
 	inline bool IsCameraConnected() const { return (senseManager->IsConnected() != 0); }
 
-	inline const float GetColorHorizontalFOV() const { return colorHorizontalFOV; }
+	inline float GetColorHorizontalFOV() const { return colorHorizontalFOV; }
 
-	inline const float GetColorVerticalFOV() const { return colorVerticalFOV; }
+	inline float GetColorVerticalFOV() const { return colorVerticalFOV; }
 
-	inline const float GetDepthHorizontalFOV() const { return depthHorizontalFOV; }
+	inline float GetDepthHorizontalFOV() const { return depthHorizontalFOV; }
 
-	inline const float GetDepthVerticalFOV() const { return depthVerticalFOV; }
+	inline float GetDepthVerticalFOV() const { return depthVerticalFOV; }
 
 	const ECameraModel GetCameraModel() const;
 
@@ -78,21 +79,21 @@ public:
 
 	inline FStreamResolution GetColorCameraResolution() const { return colorResolution; }
 
-	inline const int GetColorImageWidth() const { return colorResolution.width; }
+	inline int32 GetColorImageWidth() const { return colorResolution.width; }
 
-	inline const int GetColorImageHeight() const { return colorResolution.height; }
+	inline int32 GetColorImageHeight() const { return colorResolution.height; }
 
 	void SetColorCameraResolution(EColorResolution resolution);
 
 	inline FStreamResolution GetDepthCameraResolution() const { return depthResolution; }
 
-	inline const int GetDepthImageWidth() const { return depthResolution.width; }
+	inline int32 GetDepthImageWidth() const { return depthResolution.width; }
 
-	inline const int GetDepthImageHeight() const { return depthResolution.height; }
+	inline int32 GetDepthImageHeight() const { return depthResolution.height; }
 
 	void SetDepthCameraResolution(EDepthResolution resolution);
 
-	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution);
+	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) const;
 
 	inline const uint8* GetColorBuffer() const { return fgFrame->colorImage.GetData(); }
 
@@ -100,15 +101,13 @@ public:
 
 	// 3D Scanning Module Support 
 
-	void ConfigureScanning(EScan3DMode scanningMode, bool solidify, bool texture);
+	void ConfigureScanning(EScan3DMode scanningMode, bool bSolidify, bool bTexture);
 
 	void SetScanningVolume(FVector boundingBox, int32 resolution);
 
 	void StartScanning();
 
 	void StopScanning();
-
-	void ResetScanning();
 
 	void SaveScan(EScan3DFileFormat saveFileFormat, const FString& filename);
 	
@@ -118,15 +117,15 @@ public:
 
 	inline FStreamResolution GetScan3DResolution() const { return scan3DResolution; }
 
-	inline int GetScan3DImageWidth() const { return scan3DResolution.width; }
+	inline int32 GetScan3DImageWidth() const { return scan3DResolution.width; }
 
-	inline int GetScan3DImageHeight() const { return scan3DResolution.height; }
+	inline int32 GetScan3DImageHeight() const { return scan3DResolution.height; }
 
 	inline const uint8* GetScanBuffer() const { return fgFrame->scanImage.GetData(); }
 
-	inline bool HasScan3DImageSizeChanged() const { return bScan3DImageSizeChanged.load(); }
+	inline bool HasScan3DImageSizeChanged() const { return bScan3DImageSizeChanged; }
 
-	inline bool HasScanCompleted() const { return bScanCompleted.load(); }
+	inline bool HasScanCompleted() const { return bScanCompleted; }
 
 private:
 	// Core SDK handles

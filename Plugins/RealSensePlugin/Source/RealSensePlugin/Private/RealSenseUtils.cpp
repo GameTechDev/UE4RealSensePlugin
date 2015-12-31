@@ -12,7 +12,7 @@ FVector ConvertRSVectorToUnreal(FVector v)
 
 // Maps the depth value to a number between 0 - 255 so it can
 // be represented as an 8-bit color.
-uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width) 
+uint8 ConvertDepthValueTo8Bit(int32 depth, int32 width)
 {
 	// The F200 and R200 cameras support different maximum depths.
 	float max_depth = 0.0f;
@@ -25,42 +25,26 @@ uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width)
 
 	// A depth value of 0 indicates no data available.
 	// This value will be mapped to the color black.
-	if (depth == 0) {
+	if ((depth == 0) || (depth > max_depth)) {
 		return 0;
 	}
 
 	return (255 * ((max_depth - depth) / max_depth));
 }
 
-PXCImage::PixelFormat ERealSensePixelFormatToPXCPixelFormat(ERealSensePixelFormat format)
+PXCImage::PixelFormat GetPXCPixelFormat(ERealSensePixelFormat format)
 {
 	switch (format) {
-	case ERealSensePixelFormat::COLOR_RGB24:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_RGB24;
 	case ERealSensePixelFormat::COLOR_RGB32:
 		return PXCImage::PixelFormat::PIXEL_FORMAT_RGB32;
-	case ERealSensePixelFormat::COLOR_Y8:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_Y8;
-	case ERealSensePixelFormat::COLOR_NV12:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_NV12;
-	case ERealSensePixelFormat::COLOR_YUY2:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_YUY2;
-	case ERealSensePixelFormat::DEPTH_F32_MM:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_DEPTH_F32;
 	case ERealSensePixelFormat::DEPTH_G16_MM:
 		return PXCImage::PixelFormat::PIXEL_FORMAT_DEPTH;
-	case ERealSensePixelFormat::DEPTH_G16_RAW:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_DEPTH_RAW;
-	case ERealSensePixelFormat::IR_RELATIVE_Y8:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_Y8_IR_RELATIVE;
-	case ERealSensePixelFormat::IR_Y16:
-		return PXCImage::PixelFormat::PIXEL_FORMAT_Y16;
 	default:
 		return PXCImage::PixelFormat::PIXEL_FORMAT_ANY;
 	}
 }
 
-PXC3DScan::ScanningMode ERealSenseScanModeToPXCScanMode(EScan3DMode mode)
+PXC3DScan::ScanningMode GetPXCScanningMode(EScan3DMode mode)
 {
 	switch (mode) {
 	case EScan3DMode::OBJECT:
@@ -69,6 +53,16 @@ PXC3DScan::ScanningMode ERealSenseScanModeToPXCScanMode(EScan3DMode mode)
 		return PXC3DScan::ScanningMode::FACE;
 	default:
 		return PXC3DScan::ScanningMode::FACE;
+	}
+}
+
+PXC3DScan::FileFormat GetPXCScanFileFormat(EScan3DFileFormat format)
+{
+	switch (format) {
+	case EScan3DFileFormat::OBJ:
+		return PXC3DScan::FileFormat::OBJ;
+	default:
+		return PXC3DScan::FileFormat::OBJ;
 	}
 }
 
@@ -126,20 +120,6 @@ FStreamResolution GetEDepthResolutionValue(EDepthResolution res)
 	default:
 		return{ 0, 0, 0.0f, ERealSensePixelFormat::PIXEL_FORMAT_ANY };
 	}
-}
-
-// Set the color of every pixel in the Texture to the input color.
-void ClearTexture(UTexture2D* Texture, FColor color) 
-{
-	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
-	for (int i = 0; i < Texture->GetSizeX() * Texture->GetSizeY(); i++, out += 4) {
-		out[0] = color.R;
-		out[1] = color.G;
-		out[2] = color.B;
-		out[3] = color.A;
-	}
-	Texture->PlatformData->Mips[0].BulkData.Unlock();
-	Texture->UpdateResource();
 }
 
 // Original function borrowed from RSSDK sp_glut_utils.h

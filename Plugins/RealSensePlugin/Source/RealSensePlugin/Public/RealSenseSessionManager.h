@@ -30,31 +30,31 @@ class ARealSenseSessionManager : public AActor
 	bool IsCameraConnected() const;
 
 	// Returns the horizontal field of view of the RealSense RGB camera.
-	const float GetColorHorizontalFOV() const;
+	float GetColorHorizontalFOV() const;
 
 	// Returns the vertical field of view of the RealSense RGB camera.
-	const float GetColorVerticalFOV() const;
+	float GetColorVerticalFOV() const;
 
 	// Returns the horizontal field of view of the RealSense depth camera.
-	const float GetDepthHorizontalFOV() const;
+	float GetDepthHorizontalFOV() const;
 
 	// Returns the vertical field of view of the RealSense depth camera.
-	const float GetDepthVerticalFOV() const;
+	float GetDepthVerticalFOV() const;
 
 	// Returns the model of the connected camera: R200, F200, or Other.
-	const ECameraModel GetCameraModel() const;
+	ECameraModel GetCameraModel() const;
 
 	// Returns the connected camera's firmware version as a human readable string.
-	const FString GetCameraFirmware() const;
+	FString GetCameraFirmware() const;
 
 	// Returns the user-defined resolution of the RealSense RGB camera.
 	FStreamResolution GetColorCameraResolution() const;
 
 	// Returns the width of the user-defined resolution of the RealSense RGB camera.
-	int GetColorImageWidth() const;
+	int32 GetColorImageWidth() const;
 
 	// Returns the height of the user-defined resolution of the RealSense RGB camera.
-	int GetColorImageHeight() const;
+	int32 GetColorImageHeight() const;
 
 	// Set the resolution to be used by the RealSense RGB camera.
 	void SetColorCameraResolution(EColorResolution resolution);
@@ -63,10 +63,10 @@ class ARealSenseSessionManager : public AActor
 	FStreamResolution GetDepthCameraResolution() const;
 
 	// Returns the width of the user-defined resolution of the RealSense depth camera.
-	int GetDepthImageWidth() const;
+	int32 GetDepthImageWidth() const;
 
 	// Returns the height of the user-defined resolution of the RealSense depth camera.
-	int GetDepthImageHeight() const;
+	int32 GetDepthImageHeight() const;
 
 	// Set the resolution to be used by the RealSense depth camera.
 	void SetDepthCameraResolution(EDepthResolution resolution);
@@ -95,7 +95,7 @@ class ARealSenseSessionManager : public AActor
 	//
 	// If texture is true, the middleware will create a texture file along with
 	// the mesh. If false, the mesh file will be include vertex color information.
-	void ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify, bool Texture);
+	void ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify, bool bTexture);
 
 	// Only use this function if 3D Scanning is set to Variable mode.
 	// Sets the bounding box of the 3D space in which you wish to scan
@@ -110,9 +110,6 @@ class ARealSenseSessionManager : public AActor
 
 	// Instructs the 3D Scanning module to stop scanning.
 	void StopScanning();
-
-	// Instructs the 3D Scanning module to restart scanning.
-	void ResetScanning();
 
 	// Saves the scanned data to a file with the specified format and filename.
 	// Currently only the OBJ format is supported.
@@ -131,37 +128,32 @@ class ARealSenseSessionManager : public AActor
 
 	// Returns the width of the middleware-defined resolution used by the 
 	// 3D scanning module.
-	int GetScan3DImageWidth() const;
+	int32 GetScan3DImageWidth() const;
 
 	// Returns the height of the middleware-defined resolution used by the 
 	// 3D scanning module.
-	int GetScan3DImageHeight() const;
+	int32 GetScan3DImageHeight() const;
 
 	// Returns a pointer to the latest frame obtained from the 3D scanning
 	// module, representing a preview of the current scanning progress.
 	TArray<FSimpleColor> GetScanBuffer() const;
 
 	// Returns true if the resolution of the 3D scanning module has changed.
-	bool HasScan3DImageSizeChanged();
+	bool HasScan3DImageSizeChanged() const;
 
 	// Returns true when the 3D scanning module finishes saving a scan.
 	bool HasScanCompleted() const;
 
-	// Creates a new RealSenseImpl object to handle the RealSense implementation
 	ARealSenseSessionManager();
 
-	// Calls EnableRealSenseFeatureSet to initialize the set of enabled features
 	virtual void BeginPlay() override;
 
-	// Grabs the next frame of RealSense data and updates private members
 	virtual void Tick(float DeltaSeconds) override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	std::unique_ptr<RealSenseImpl> impl;
 
-	uint32 RealSenseFeatureSet;
+	uint8 RealSenseFeatureSet;
 
 	TArray<FSimpleColor> ColorBuffer;
 	TArray<int32> DepthBuffer;

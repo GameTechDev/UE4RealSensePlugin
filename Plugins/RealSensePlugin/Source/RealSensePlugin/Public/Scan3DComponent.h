@@ -51,10 +51,6 @@ class UScan3DComponent : public URealSenseComponent
 	UFUNCTION(BlueprintCallable, Category = "RealSense") 
 	void StopScanning();
 
-	// Restarts the scanning process.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") 
-	void ResetScanning();	
-
 	// Stops the scanning process and asynchronously saves the scanned data to a mesh 
 	// file with the specified file format and file name.
 	UFUNCTION(BlueprintCallable, Category = "RealSense") 

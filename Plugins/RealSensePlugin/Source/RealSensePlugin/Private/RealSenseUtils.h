@@ -1,10 +1,5 @@
 #pragma once
 
-#include "AllowWindowsPlatformTypes.h"
-#include <string>
-#include <vector>
-#include "HideWindowsPlatformTypes.h"
-
 #include "RealSenseTypes.h"
 #include "pxc3dscan.h"
 
@@ -39,7 +34,7 @@ DECLARE_LOG_CATEGORY_EXTERN(RealSensePlugin, Log, All);
 FVector ConvertRSVectorToUnreal(FVector v);
 
 // Converts a depth value (in millimeters) to an 8-bit scale (between 0 - 255).
-uint8 ConvertDepthValueTo8Bit(int32 depth, uint32 width);
+uint8 ConvertDepthValueTo8Bit(int32 depth, int32 width);
 
 // Returns a StreamResolution structure containing the values from the enumerated ColorResolution
 FStreamResolution GetEColorResolutionValue(EColorResolution res);
@@ -48,13 +43,13 @@ FStreamResolution GetEColorResolutionValue(EColorResolution res);
 FStreamResolution GetEDepthResolutionValue(EDepthResolution res);
 
 // Converts a Blueprint-exposed RealSensePixelFormat to a PXCImage::PixelFormat
-PXCImage::PixelFormat ERealSensePixelFormatToPXCPixelFormat(ERealSensePixelFormat format);
+PXCImage::PixelFormat GetPXCPixelFormat(ERealSensePixelFormat format);
 
 // Converts a Blueprint-exposed RealSensePixelFormat to a PXCImage::PixelFormat
-PXC3DScan::ScanningMode ERealSenseScanModeToPXCScanMode(EScan3DMode mode);
+PXC3DScan::ScanningMode GetPXCScanningMode(EScan3DMode mode);
 
-// Sets every pixel in the input texture to the input color.
-void ClearTexture(UTexture2D* texture, FColor color);
+// Converts a Blueprint-exposed RealSensePixelFormat to a PXCImage::PixelFormat
+PXC3DScan::FileFormat GetPXCScanFileFormat(EScan3DFileFormat format);
 
 // Copies the data from the input color PXCImage into the input data structure.
 void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height);

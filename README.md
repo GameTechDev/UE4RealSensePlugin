@@ -39,3 +39,7 @@ Check out this tutorial to get started using the RealSense plugin: COMING SOON!
 #### Known Non-Compliance with UE4 Coding Standard
 This plugin makes use of C++11 std::unique_ptr objects, instead of the TSharedPtr type in places where a custom deleter is needed.
 Many of the built-in RealSense types (like PXCSession) are unable to use a TSharedPtr because the TSharedPtr DestroyObject function, cannot access private members in the PXCBase class.
+
+I do not know of an equivalent data type in UE4 for std::atomic<T> types, so I have kept std::atomic_bool variables in places where I need shared booleans between threads.
+
+Having read UE4 Threading tutorials, the amount of overhead compared to a simple call to std::thread() makes it seem not worth the extra effort, so I have kept std::thread, std::mutex, and std::unique_locks in my code.

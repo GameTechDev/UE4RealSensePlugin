@@ -1,7 +1,8 @@
 #include "RealSensePluginPrivatePCH.h"
 #include "RealSenseBlueprintLibrary.h"
 
-URealSenseBlueprintLibrary::URealSenseBlueprintLibrary(const class FObjectInitializer& ObjInit) : Super(ObjInit) 
+URealSenseBlueprintLibrary::URealSenseBlueprintLibrary(const class FObjectInitializer& ObjInit) 
+	: Super(ObjInit) 
 { 
 }
 
@@ -72,15 +73,16 @@ FString URealSenseBlueprintLibrary::ECameraModelToString(ECameraModel value)
 }
 
 // Copies the data from the input Buffer into the PlatformData of the Texture object.
-// For convenience, this function returns a pointer to the input Texture that was modified.
+// For convenience, this function returns a pointer to the input Texture that was 
+// modified.
 UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpleColor>& Buffer, UTexture2D* Texture) 
 {
 	if (Texture == nullptr) {
 		return nullptr;
 	}
 
+	// Test that the Buffer and Texture have the same capacity
 	if (Buffer.Num() != Texture->GetSizeX() * Texture->GetSizeY()) {
-		RS_LOG(Error, "Buffer / Texture Size Mismatch")
 		return nullptr;
 	}
 	
@@ -88,8 +90,8 @@ UTexture2D* URealSenseBlueprintLibrary::ColorBufferToTexture(const TArray<FSimpl
 	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
 	// There are four bytes per pixel, one each for Red, Green, Blue, and Alpha.
-	int bytesPerPixel = 4;
-	int size = Texture->GetSizeX() * Texture->GetSizeY() * bytesPerPixel;
+	uint8 bytesPerPixel = 4;
+	uint32 size = Texture->GetSizeX() * Texture->GetSizeY() * bytesPerPixel;
 	memcpy_s(out, size, Buffer.GetData(), size);
 
 	Texture->PlatformData->Mips[0].BulkData.Unlock();
@@ -106,15 +108,15 @@ UTexture2D* URealSenseBlueprintLibrary::DepthBufferToTexture(const TArray<int32>
 		return nullptr;
 	}
 
+	// Test that the Buffer and Texture have the same capacity
 	if (Buffer.Num() != Texture->GetSizeX() * Texture->GetSizeY()) {
-		RS_LOG(Error, "Buffer / Texture Size Mismatch")
 		return nullptr;
 	}
 
 	// The Texture's PlatformData needs to be locked before it can be modified.
 	auto out = reinterpret_cast<uint8*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
-	for (int x : Buffer) {
+	for (int32 x : Buffer) {
 		// Convert the depth value (in millimeters) into a value between 0 - 255. 
 		uint8 d = ConvertDepthValueTo8Bit(x, Texture->GetSizeX());
 		*out++ = d;
