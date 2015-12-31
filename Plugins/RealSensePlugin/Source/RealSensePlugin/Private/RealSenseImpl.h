@@ -163,9 +163,9 @@ private:
 	std::thread cameraThread;
 	std::atomic_bool bCameraThreadRunning;
 
-	TSharedPtr<RealSenseDataFrame> fgFrame;
-	TSharedPtr<RealSenseDataFrame> midFrame;
-	TSharedPtr<RealSenseDataFrame> bgFrame;
+	std::unique_ptr<RealSenseDataFrame> fgFrame;
+	std::unique_ptr<RealSenseDataFrame> midFrame;
+	std::unique_ptr<RealSenseDataFrame> bgFrame;
 
 	// Mutex for locking access to the midFrame
 	std::mutex midFrameMutex;

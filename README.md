@@ -34,3 +34,8 @@ Check out this tutorial to get started using the RealSense plugin: COMING SOON!
 #### In-Progress Components
 * Head Tracking - Provides data for the user's head position and rotation
 * Scene Perception - Supports the scanning of small scenes into 3D models
+
+
+#### Known Non-Compliance with UE4 Coding Standard
+This plugin makes use of C++11 std::unique_ptr objects, instead of the TSharedPtr type in places where a custom deleter is needed.
+Many of the built-in RealSense types (like PXCSession) are unable to use a TSharedPtr because the TSharedPtr DestroyObject function, cannot access private members in the PXCBase class.
