@@ -64,9 +64,9 @@ RealSenseImpl::RealSenseImpl()
 
 	bCameraThreadRunning.store(false);
 
-	fgFrame = std::unique_ptr<RealSenseDataFrame>(new RealSenseDataFrame());
-	midFrame = std::unique_ptr<RealSenseDataFrame>(new RealSenseDataFrame());
-	bgFrame = std::unique_ptr<RealSenseDataFrame>(new RealSenseDataFrame());
+	fgFrame = MakeShareable(new RealSenseDataFrame());
+	midFrame = MakeShareable(new RealSenseDataFrame());
+	bgFrame = MakeShareable(new RealSenseDataFrame());
 
 	colorResolution = {};
 	depthResolution = {};
@@ -189,7 +189,8 @@ void RealSenseImpl::CameraThread()
 
 		// Swaps background and mid RealSenseDataFrames
 		std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
-		bgFrame.swap(midFrame);
+
+		Swap<TSharedPtr<RealSenseDataFrame>>(bgFrame, midFrame);
 	}
 }
 
@@ -219,8 +220,9 @@ void RealSenseImpl::StopCamera()
 void RealSenseImpl::SwapFrames()
 {
 	std::unique_lock<std::mutex> lock(midFrameMutex);
-	if (fgFrame->number < midFrame->number)
-		fgFrame.swap(midFrame);
+	if (fgFrame->number < midFrame->number) {
+		Swap<TSharedPtr<RealSenseDataFrame>>(fgFrame, midFrame);
+	}
 }
 
 // Enables the specified Core SDK and middleware modules and creates handles
