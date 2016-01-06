@@ -476,6 +476,7 @@ void RealSenseImpl::UpdateScan3DImageSize(PXCImage::ImageInfo info)
 {
 	if ((scan3DResolution.width == info.width) && 
 		(scan3DResolution.height == info.height)) {
+		bScan3DImageSizeChanged = false;
 		return;
 	}
 
