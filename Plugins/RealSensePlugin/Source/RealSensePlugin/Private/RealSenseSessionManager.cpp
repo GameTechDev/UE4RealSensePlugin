@@ -207,11 +207,6 @@ void ARealSenseSessionManager::SaveScan(EScan3DFileFormat SaveFileFormat, FStrin
 	impl->SaveScan(SaveFileFormat, Filename);
 }
 
-void ARealSenseSessionManager::LoadScan(FString Filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors)
-{
-	impl->LoadScan(Filename, Vertices, Triangles, Colors);
-}
-
 void ARealSenseSessionManager::SetScanningVolume(FVector BoundingBox, int32 Resolution)
 {
 	impl->SetScanningVolume(BoundingBox, Resolution);

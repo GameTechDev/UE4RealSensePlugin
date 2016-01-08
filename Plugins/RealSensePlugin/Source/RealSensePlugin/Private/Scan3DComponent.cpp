@@ -73,7 +73,7 @@ void UScan3DComponent::SaveScan(FString Filename)
 void UScan3DComponent::LoadScan(FString Filename)
 {
 	Filename = FPaths::GameContentDir().Append(Filename);
-	globalRealSenseSession->LoadScan(Filename, Vertices, Triangles, Colors);
+	LoadMeshFile(Filename, Vertices, Triangles, Colors);
 }
 
 bool UScan3DComponent::IsScanning() 

@@ -56,3 +56,5 @@ void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 w
 
 // Copies the data from the input depth PXCImage into the input data structure.
 void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height);
+
+void LoadMeshFile(const FString& filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);

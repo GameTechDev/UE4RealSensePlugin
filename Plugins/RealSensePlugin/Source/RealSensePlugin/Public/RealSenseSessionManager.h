@@ -115,11 +115,6 @@ class ARealSenseSessionManager : public AActor
 	// Currently only the OBJ format is supported.
 	void SaveScan(EScan3DFileFormat SaveFileFormat, FString filename);
 
-	// Loads an OBJ mesh file and parses it for vertices, triangles, 
-	// and vertex color information. The input arrays will be emptied
-	// and refilled as a result of this function.
-	void LoadScan(FString filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);
-
 	// Returns true if the 3D scanning module is currently scanning.
 	bool IsScanning() const;
 

@@ -8,6 +8,7 @@
 #include "CoreMisc.h"
 #include "RealSenseTypes.h"
 #include "RealSenseUtils.h"
+#include "RealSenseBlueprintLibrary.h"
 #include "PXCSenseManager.h"
 
 // Stores all relevant data computed from one frame of RealSense camera data.
@@ -111,8 +112,6 @@ public:
 
 	void SaveScan(EScan3DFileFormat saveFileFormat, const FString& filename);
 	
-	void LoadScan(const FString& filename, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FColor>& Colors);
-
 	inline bool IsScanning() const { return (p3DScan->IsScanning() != 0); }
 
 	inline FStreamResolution GetScan3DResolution() const { return scan3DResolution; }
