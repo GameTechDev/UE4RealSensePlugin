@@ -11,7 +11,13 @@ Behind the scenes, each component reads from and writes to the GSMr to ensure co
 
 - - -
 
-Check out this tutorial to get started using the RealSense plugin: COMING SOON!
+For more details, please see the full article at: https://software.intel.com/en-us/articles/intel-realsense-sdk-plug-in-for-unreal-engine-4
+
+Also, check out these tutorial videos to get started using the RealSense plugin: 
+
+https://youtu.be/mrIiBssoI0w
+
+https://youtu.be/WMqG3UZkBTE
 
 - - -
 
