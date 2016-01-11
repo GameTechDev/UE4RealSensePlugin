@@ -28,10 +28,10 @@ https://youtu.be/WMqG3UZkBTE
 * Intel Graphics supporting Open CL 1.2 (If using Scene Perception Component)
 
 #### Software Requirements
-* [Intel(R) RealSense(TM) SDK R4](https://software.intel.com/en-us/intel-realsense-sdk/download)
+* [Intel(R) RealSense(TM) SDK R5](https://software.intel.com/en-us/intel-realsense-sdk/download)
 * Unreal Engine 4.8 (or higher)
 * Windows 8.1 or 10
-* Visual Studio 2013
+* Visual Studio 2013 or higher
 
 #### Featured Components
 * Camera Streams - Provides access to raw color and depth image buffers
