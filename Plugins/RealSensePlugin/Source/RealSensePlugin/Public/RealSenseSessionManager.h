@@ -12,8 +12,11 @@ class ARealSenseSessionManager : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	// Adds a new feature to the RealSense feature set
-	void AddRealSenseFeature(RealSenseFeature feature);
+	// Enables the provided feature
+	void EnableFeature(RealSenseFeature feature);
+
+	// Disables the provided feature
+	void DisableFeature(RealSenseFeature feature);
 
 	// RealSenseComponent Support
 

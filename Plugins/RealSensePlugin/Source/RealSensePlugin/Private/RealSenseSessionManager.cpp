@@ -13,10 +13,8 @@ ARealSenseSessionManager::ARealSenseSessionManager(const class FObjectInitialize
 	impl = std::unique_ptr<RealSenseImpl>(new RealSenseImpl());
 }
 
-// Enable the current set of specified features
 void ARealSenseSessionManager::BeginPlay() 
 {
-	impl->EnableRealSenseFeatures(RealSenseFeatureSet);
 }
 
 // Grab a new frame of RealSense data and process it based on the current
@@ -60,9 +58,16 @@ void ARealSenseSessionManager::Tick(float DeltaTime)
 	}
 }
 
-void ARealSenseSessionManager::AddRealSenseFeature(RealSenseFeature feature) 
+void ARealSenseSessionManager::EnableFeature(RealSenseFeature feature)
 {
 	RealSenseFeatureSet |= feature;
+	impl->EnableFeature(feature);
+}
+
+void ARealSenseSessionManager::DisableFeature(RealSenseFeature feature)
+{
+	RealSenseFeatureSet &= ~feature;
+	impl->DisableFeature(feature);
 }
 
 bool ARealSenseSessionManager::IsCameraConnected() const

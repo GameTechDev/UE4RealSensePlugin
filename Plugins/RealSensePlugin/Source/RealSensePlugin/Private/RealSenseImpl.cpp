@@ -51,8 +51,7 @@ RealSenseImpl::RealSenseImpl()
 	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
 
 	RealSenseFeatureSet = 0;
-	bColorStreamingEnabled = false;
-	bDepthStreamingEnabled = false;
+	bCameraStreamingEnabled = false;
 	bScan3DEnabled = false;
 
 	bCameraThreadRunning = false;
@@ -127,20 +126,13 @@ void RealSenseImpl::CameraThread()
 
 		bgFrame->number = ++currentFrame;
 
-		PXCCapture::Sample* sample = senseManager->QuerySample();
-
 		// Performs Core SDK and middleware processing and store results 
 		// in background RealSenseDataFrame
-		if (bColorStreamingEnabled) {
-			if (sample->color) {
-				CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
-			}
-		}
+		if (bCameraStreamingEnabled) {
+			PXCCapture::Sample* sample = senseManager->QuerySample();
 
-		if (bDepthStreamingEnabled) {
-			if (sample->depth) {
-				CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
-			}
+			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
+			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
 		}
 
 		if (bScan3DEnabled) {
@@ -184,6 +176,7 @@ void RealSenseImpl::CameraThread()
 void RealSenseImpl::StartCamera() 
 {
 	if (bCameraThreadRunning == false) {
+		EnableMiddleware();
 		bCameraThreadRunning = true;
 		cameraThread = std::thread([this]() { CameraThread(); });
 	}
@@ -199,7 +192,6 @@ void RealSenseImpl::StopCamera()
 		cameraThread.join();
 	}
 	senseManager->Close();
-	EnableRealSenseFeatures(RealSenseFeatureSet);
 }
 
 // Swaps the mid and foreground RealSenseDataFrames.
@@ -211,24 +203,35 @@ void RealSenseImpl::SwapFrames()
 	}
 }
 
-// Enables the specified Core SDK and middleware modules and creates handles
-// to the related SDK objects.
-void RealSenseImpl::EnableRealSenseFeatures(uint32 featureSet) 
+void RealSenseImpl::EnableMiddleware()
 {
-	if (device == nullptr) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, 
-										 TEXT("No RealSense Camera Detected"));
-	}
-
-	RealSenseFeatureSet = featureSet;
-	if (featureSet & RealSenseFeature::CAMERA_STREAMING) {
-		bColorStreamingEnabled = true;
-		bDepthStreamingEnabled = true;
-	}
-	if (featureSet & RealSenseFeature::SCAN_3D) {
+	if (bScan3DEnabled) {
 		senseManager->Enable3DScan();
 		p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(senseManager->Query3DScan());
+	}
+}
+
+void RealSenseImpl::EnableFeature(RealSenseFeature feature)
+{
+	switch (feature) {
+	case RealSenseFeature::CAMERA_STREAMING:
+		bCameraStreamingEnabled = true;
+		return;
+	case RealSenseFeature::SCAN_3D:
 		bScan3DEnabled = true;
+		return;
+	}
+}
+
+void RealSenseImpl::DisableFeature(RealSenseFeature feature)
+{
+	switch (feature) {
+	case RealSenseFeature::CAMERA_STREAMING:
+		bCameraStreamingEnabled = false;
+		return;
+	case RealSenseFeature::SCAN_3D:
+		bScan3DEnabled = false;
+		return;
 	}
 }
 

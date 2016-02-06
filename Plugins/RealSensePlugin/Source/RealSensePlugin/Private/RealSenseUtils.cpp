@@ -126,6 +126,8 @@ FStreamResolution GetEDepthResolutionValue(EDepthResolution res)
 // Copies the data from the PXCImage into the input data buffer.
 void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height)
 {
+	assert(image != nullptr);
+
 	// Extracts the raw data from the PXCImage object.
 	PXCImage::ImageData imageData;
 	pxcStatus result = image->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PIXEL_FORMAT_RGB24, &imageData);
@@ -152,6 +154,8 @@ void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 w
 // Copies the data from the PXCImage into the input data buffer.
 void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height)
 {
+	assert(image != nullptr);
+
 	// Extracts the raw data from the PXCImage object.
 	PXCImage::ImageData imageData;
 	pxcStatus result = image->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PIXEL_FORMAT_DEPTH, &imageData);

@@ -2,6 +2,7 @@
 
 #include "RealSenseTypes.h"
 #include "pxc3dscan.h"
+#include <assert.h>
 
 // Log Category that can be used by all RealSensePlugin source files that inclue this file
 DECLARE_LOG_CATEGORY_EXTERN(RealSensePlugin, Log, All);

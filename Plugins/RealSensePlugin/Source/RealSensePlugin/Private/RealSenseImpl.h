@@ -60,9 +60,11 @@ public:
 
 	// Core SDK Support
 
-	// Enables the middleware specified by the input feature set and creates
-	// handles to the necessary RSSDK objects. 
-	void EnableRealSenseFeatures(uint32 featureSet);
+	void EnableMiddleware();
+
+	void EnableFeature(RealSenseFeature feature);
+
+	void DisableFeature(RealSenseFeature feature);
 
 	inline bool IsCameraConnected() const { return (senseManager->IsConnected() != 0); }
 
@@ -152,8 +154,7 @@ private:
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
 
-	std::atomic_bool bColorStreamingEnabled;
-	std::atomic_bool bDepthStreamingEnabled;
+	std::atomic_bool bCameraStreamingEnabled;
 	std::atomic_bool bScan3DEnabled;
 
 	// Camera processing members
