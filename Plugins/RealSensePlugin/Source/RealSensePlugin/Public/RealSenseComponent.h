@@ -50,6 +50,16 @@ class URealSenseComponent : public UActorComponent
 	UFUNCTION(BlueprintCallable, Category = "RealSense") 
 	void StopCamera();
 
+	// Enabling this feature will instruct the camera processing thread to start / 
+	// resume processing of this feature.
+	UFUNCTION(BlueprintCallable, Category = "RealSense")
+	void EnableFeature();
+
+	// Disabling this feature will instruct the camera processing thread to pause 
+	// processing of this feature.
+	UFUNCTION(BlueprintCallable, Category = "RealSense")
+	void DisableFeature();
+
 	// Returns true if the RealSense camera processing thread is currently running.
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RealSense") 
 	bool IsCameraRunning();
@@ -89,4 +99,6 @@ class URealSenseComponent : public UActorComponent
 protected:
 	// Reference to the global RealSenseSessionmanager actor
 	ARealSenseSessionManager* globalRealSenseSession;
+
+	RealSenseFeature m_feature;
 };

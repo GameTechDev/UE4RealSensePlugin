@@ -35,16 +35,6 @@ class UCameraStreamComponent : public URealSenseComponent
 	UPROPERTY(BlueprintReadOnly, Category = "RealSense") 
 	UTexture2D* DepthTexture;
 
-	// Enabling this feature will instruct the camera processing thread to start / 
-	// resume processing of this feature.
-	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	void EnableFeature();
-
-	// Disabling this feature will instruct the camera processing thread to pause 
-	// processing of this feature.
-	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	void DisableFeature();
-
 	// Sets the resolution that the RealSense RGB camera should use. 
 	// This function must be called before StartCamera() in order to 
 	// enable the RGB camera.

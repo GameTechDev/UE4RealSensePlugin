@@ -4,6 +4,7 @@
 UCameraStreamComponent::UCameraStreamComponent(const class FObjectInitializer& ObjInit) 
 	: Super(ObjInit) 
 { 
+	m_feature = RealSenseFeature::CAMERA_STREAMING;
 }
 
 // Adds the CAMERA_STREAMING feature to the RealSenseSessionManager and
@@ -11,10 +12,6 @@ UCameraStreamComponent::UCameraStreamComponent(const class FObjectInitializer& O
 void UCameraStreamComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
-	if (globalRealSenseSession != nullptr) {
-		globalRealSenseSession->EnableFeature(RealSenseFeature::CAMERA_STREAMING);
-	}
 
 	ColorTexture = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
 	DepthTexture = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
@@ -30,16 +27,6 @@ void UCameraStreamComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 
 	ColorBuffer = globalRealSenseSession->GetColorBuffer();
 	DepthBuffer = globalRealSenseSession->GetDepthBuffer();
-}
-
-void UCameraStreamComponent::EnableFeature()
-{
-	globalRealSenseSession->EnableFeature(RealSenseFeature::CAMERA_STREAMING);
-}
-
-void UCameraStreamComponent::DisableFeature()
-{
-	globalRealSenseSession->DisableFeature(RealSenseFeature::CAMERA_STREAMING);
 }
 
 // If the supplied resolution is valid, this function will pass that resolution

@@ -34,6 +34,8 @@ void URealSenseComponent::InitializeComponent()
 			globalRealSenseSession = GetWorld()->SpawnActor<ARealSenseSessionManager>(ARealSenseSessionManager::StaticClass());
 		}
 	}
+
+	globalRealSenseSession->EnableFeature(m_feature);
 }
 
 // Queries the camera model, firmware, and field of view data from the RealSense 
@@ -48,6 +50,16 @@ void URealSenseComponent::BeginPlay()
 
 	DepthHorizontalFOV = globalRealSenseSession->GetDepthHorizontalFOV();
 	DepthVerticalFOV = globalRealSenseSession->GetDepthVerticalFOV();
+}
+
+void URealSenseComponent::EnableFeature()
+{
+	globalRealSenseSession->EnableFeature(m_feature);
+}
+
+void URealSenseComponent::DisableFeature()
+{
+	globalRealSenseSession->DisableFeature(m_feature);
 }
 
 void URealSenseComponent::StartCamera()

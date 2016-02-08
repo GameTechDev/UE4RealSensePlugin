@@ -5,6 +5,7 @@ UScan3DComponent::UScan3DComponent(const class FObjectInitializer& ObjInit)
 	: Super(ObjInit) 
 { 
 	bHasScanStarted = false;
+	m_feature = RealSenseFeature::SCAN_3D;
 }
 
 // Adds the SCAN_3D feature to the RealSenseSessionManager and initializes the 
@@ -12,10 +13,6 @@ UScan3DComponent::UScan3DComponent(const class FObjectInitializer& ObjInit)
 void UScan3DComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	
-	if (globalRealSenseSession != nullptr) {
-		globalRealSenseSession->EnableFeature(RealSenseFeature::SCAN_3D);
-	}
 
 	ScanTexture = UTexture2D::CreateTransient(1, 1,	EPixelFormat::PF_B8G8R8A8);
 }
@@ -46,16 +43,6 @@ void UScan3DComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
 		OnScanComplete.Broadcast();
 		bHasScanStarted = false;
 	}
-}
-
-void UScan3DComponent::EnableFeature()
-{
-	globalRealSenseSession->EnableFeature(RealSenseFeature::SCAN_3D);
-}
-
-void UScan3DComponent::DisableFeature()
-{
-	globalRealSenseSession->DisableFeature(RealSenseFeature::SCAN_3D);
 }
 
 void UScan3DComponent::ConfigureScanning(EScan3DMode ScanningMode, bool bSolidify)

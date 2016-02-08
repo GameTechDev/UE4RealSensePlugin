@@ -37,16 +37,6 @@ class UScan3DComponent : public URealSenseComponent
 	UPROPERTY(BlueprintAssignable, Category = "RealSense") 
 	FRealSenseNullaryDelegate OnScanComplete;
 
-	// Enabling this feature will instruct the camera processing thread to start / 
-	// resume processing of this feature.
-	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	void EnableFeature();
-
-	// Disabling this feature will instruct the camera processing thread to pause 
-	// processing of this feature.
-	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	void DisableFeature();
-
 	// Sets the scanning mode and options for 3D Scanning. After calling this function, 
 	// the scanning preview image will be available in the ScanBuffer.
 	UFUNCTION(BlueprintCallable, Category = "RealSense") 
