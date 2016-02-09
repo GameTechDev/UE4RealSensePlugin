@@ -49,10 +49,12 @@ RealSenseImpl::RealSenseImpl()
 	}
 
 	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
+	pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(nullptr);
 
 	RealSenseFeatureSet = 0;
 	bCameraStreamingEnabled = false;
 	bScan3DEnabled = false;
+	bFaceEnabled = false;
 
 	bCameraThreadRunning = false;
 
@@ -119,6 +121,10 @@ void RealSenseImpl::CameraThread()
 
 	assert(status == PXC_STATUS_NO_ERROR);
 
+	if (bFaceEnabled) {
+		faceData = pFace->CreateOutput();
+	}
+
 	while (bCameraThreadRunning == true) {
 		// Acquires new camera frame
 		status = senseManager->AcquireFrame(true);
@@ -161,6 +167,25 @@ void RealSenseImpl::CameraThread()
 				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
 				bReconstructEnabled = false;
 				bScanCompleted = true;
+			}
+		}
+
+		if (bFaceEnabled) {
+			faceData->Update();
+			bgFrame->headCount = faceData->QueryNumberOfDetectedFaces();
+			if (bgFrame->headCount > 0) {
+				PXCFaceData::Face* face = faceData->QueryFaceByIndex(0);
+				PXCFaceData::PoseData* poseData = face->QueryPose();
+
+				if (poseData) {
+					PXCFaceData::HeadPosition headPosition = {};
+					poseData->QueryHeadPosition(&headPosition);
+					bgFrame->headPosition = FVector(headPosition.headCenter.x, headPosition.headCenter.y, headPosition.headCenter.z);
+
+					PXCFaceData::PoseEulerAngles headRotation = {};
+					poseData->QueryPoseAngles(&headRotation);
+					bgFrame->headRotation = FRotator(headRotation.pitch, headRotation.yaw, headRotation.roll);
+				}
 			}
 		}
 		
@@ -209,6 +234,10 @@ void RealSenseImpl::EnableMiddleware()
 		senseManager->Enable3DScan();
 		p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(senseManager->Query3DScan());
 	}
+	if (bFaceEnabled) {
+		senseManager->EnableFace();
+		pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(senseManager->QueryFace());
+	}
 }
 
 void RealSenseImpl::EnableFeature(RealSenseFeature feature)
@@ -219,6 +248,9 @@ void RealSenseImpl::EnableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::SCAN_3D:
 		bScan3DEnabled = true;
+		return;
+	case RealSenseFeature::HEAD_TRACKING:
+		bFaceEnabled = true;
 		return;
 	}
 }
@@ -231,6 +263,9 @@ void RealSenseImpl::DisableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::SCAN_3D:
 		bScan3DEnabled = false;
+		return;
+	case RealSenseFeature::HEAD_TRACKING:
+		bFaceEnabled = false;
 		return;
 	}
 }

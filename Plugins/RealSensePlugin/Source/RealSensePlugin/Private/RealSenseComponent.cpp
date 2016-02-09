@@ -35,7 +35,10 @@ void URealSenseComponent::InitializeComponent()
 		}
 	}
 
-	globalRealSenseSession->EnableFeature(m_feature);
+	if (globalRealSenseSession)
+	{
+		globalRealSenseSession->EnableFeature(m_feature);
+	}
 }
 
 // Queries the camera model, firmware, and field of view data from the RealSense 

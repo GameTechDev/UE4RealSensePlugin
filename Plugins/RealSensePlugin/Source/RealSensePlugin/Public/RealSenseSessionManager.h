@@ -142,6 +142,17 @@ class ARealSenseSessionManager : public AActor
 	// Returns true when the 3D scanning module finishes saving a scan.
 	bool HasScanCompleted() const;
 
+	// HeadTrackingComponent Support
+
+	// Return the current head count
+	int GetHeadCount() const;
+
+	// Return the current head position
+	FVector GetHeadPosition() const;
+
+	// Return the current head rotation
+	FRotator GetHeadRotation() const;
+
 	ARealSenseSessionManager();
 
 	virtual void BeginPlay() override;

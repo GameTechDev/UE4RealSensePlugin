@@ -25,7 +25,11 @@ struct RealSenseDataFrame {
 	TArray<uint16> depthImage;  // Container for the camera's raw depth stream data
 	TArray<uint8> scanImage;  // Container for the scan preview image provided by the 3DScan middleware
 
-	RealSenseDataFrame() : number(0) {}
+	int headCount;
+	FVector headPosition;
+	FRotator headRotation;
+
+	RealSenseDataFrame() : number(0), headCount(0) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -128,6 +132,14 @@ public:
 
 	inline bool HasScanCompleted() const { return bScanCompleted; }
 
+	// Head Tracking Support
+
+	inline int GetHeadCount() const { return bgFrame->headCount; }
+
+	inline FVector GetHeadPosition() const { return bgFrame->headPosition; }
+
+	inline FRotator GetHeadRotation() const { return bgFrame->headRotation; }
+
 private:
 	// Core SDK handles
 
@@ -137,6 +149,7 @@ private:
 		void operator()(PXCCapture* c) { c->Release(); }
 		void operator()(PXCCapture::Device* d) { d->Release(); }
 		void operator()(PXC3DScan* sc) { ; }
+		void operator()(PXCFaceModule* sc) { ; }
 	};
 
 	std::unique_ptr<PXCSession, RealSenseDeleter> session;
@@ -150,12 +163,14 @@ private:
 	// SDK Module handles
 
 	std::unique_ptr<PXC3DScan, RealSenseDeleter> p3DScan;
+	std::unique_ptr<PXCFaceModule, RealSenseDeleter> pFace;
 
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
 
 	std::atomic_bool bCameraStreamingEnabled;
 	std::atomic_bool bScan3DEnabled;
+	std::atomic_bool bFaceEnabled;
 
 	// Camera processing members
 
@@ -191,6 +206,11 @@ private:
 	std::atomic_bool bReconstructEnabled;
 	std::atomic_bool bScanCompleted;
 	std::atomic_bool bScan3DImageSizeChanged;
+
+	// Face Module members
+
+	PXCFaceConfiguration* faceConfig;
+	PXCFaceData* faceData;
 
 	// Helper Functions
 

@@ -231,3 +231,18 @@ bool ARealSenseSessionManager::HasScanCompleted() const
 {
 	return impl->HasScanCompleted();
 }
+
+int ARealSenseSessionManager::GetHeadCount() const
+{
+	return impl->GetHeadCount();
+}
+
+FVector ARealSenseSessionManager::GetHeadPosition() const
+{
+	return impl->GetHeadPosition();
+}
+
+FRotator ARealSenseSessionManager::GetHeadRotation() const
+{
+	return impl->GetHeadRotation();
+}
