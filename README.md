@@ -19,15 +19,20 @@ https://youtu.be/WMqG3UZkBTE
 
 - - -
 
-#### Hardware Requirements
-* RealSense Camera: [F200 Front-Facing RealSense Camera](http://click.intel.com/intel-realsense-developer-kit.html) __OR__ [R200 World-Facing RealSense Camera](http://click.intel.com/intel-realsense-developer-kit-r200.html)
-* 4th Generation Intel(R) CPU or higher
+#### Available Cameras
+* SR300 Short-Range RealSense Camera
+* F200 Front-Facing RealSense Camera
+* R200 World-Facing RealSense Camera
+
+#### Other Hardware Requirements
+* 4th Generation Intel CPU or higher
 
 #### Software Requirements
-* [Intel(R) RealSense(TM) SDK R5](https://software.intel.com/en-us/intel-realsense-sdk/download)
+* [Intel(R) RealSense(TM) SDK 2016 R1](https://software.intel.com/en-us/intel-realsense-sdk/download)
+* The correct DCM for your camera (found also at the previous link)
 * Unreal Engine 4.8 or higher
-* Windows 8.1 or 10
-* Visual Studio 2013 or higher
+* SR300 - Windows 10 only
+* F200 / R200 - Windows 8.1 or 10
 
 #### Featured Components
 * Camera Streams - Provides access to raw color and depth image buffers
