@@ -15,6 +15,7 @@ ARealSenseSessionManager::ARealSenseSessionManager(const class FObjectInitialize
 
 void ARealSenseSessionManager::BeginPlay() 
 {
+	Super::BeginPlay();
 }
 
 // Grab a new frame of RealSense data and process it based on the current
