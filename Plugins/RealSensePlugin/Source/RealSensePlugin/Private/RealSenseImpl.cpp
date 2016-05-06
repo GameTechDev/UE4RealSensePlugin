@@ -312,7 +312,7 @@ void RealSenseImpl::DisableFeature(RealSenseFeature feature)
 		bFaceEnabled = false;
 		return;
 	case RealSenseFeature::BLOB_TRACKING:
-		bBlobEnabled = true;
+		bBlobEnabled = false;
 		return;
 	}
 }
