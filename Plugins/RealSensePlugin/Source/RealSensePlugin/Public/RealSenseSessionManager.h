@@ -153,6 +153,27 @@ class ARealSenseSessionManager : public AActor
 	// Return the current head rotation
 	FRotator GetHeadRotation() const;
 
+	// Return the current blob count
+	int GetBlobCount() const;
+
+	// Return the current blob center position
+	FVector GetBlobCenter() const;
+
+	// Return the current blob closest position
+	FVector GetBlobClosest() const;
+
+	// Return the current blob top most position
+	FVector GetBlobTop() const;
+
+	// Return the current blob bottom most position
+	FVector GetBlobBottom() const;
+
+	// Return the current blob left most position
+	FVector GetBlobLeft() const;
+
+	// Return the current blob right most position
+	FVector GetBlobRight() const;
+
 	ARealSenseSessionManager();
 
 	virtual void BeginPlay() override;

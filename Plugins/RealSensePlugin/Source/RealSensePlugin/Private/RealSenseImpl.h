@@ -29,7 +29,17 @@ struct RealSenseDataFrame {
 	FVector headPosition;
 	FRotator headRotation;
 
-	RealSenseDataFrame() : number(0), headCount(0) {}
+	int blobCount;
+	std::vector<int> blobPixels;
+
+	FVector blobCenter;
+	FVector blobClosest;
+	FVector blobTop;
+	FVector blobBottom;
+	FVector blobLeft;
+	FVector blobRight;
+
+	RealSenseDataFrame() : number(0), headCount(0), blobCount(0) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -135,11 +145,26 @@ public:
 	// Head Tracking Support
 
 	inline int GetHeadCount() const { return bgFrame->headCount; }
-
+	
 	inline FVector GetHeadPosition() const { return bgFrame->headPosition; }
 
 	inline FRotator GetHeadRotation() const { return bgFrame->headRotation; }
 
+	// Blob Tracking Support
+
+	inline int GetBlobCount() const { return bgFrame->blobCount; }
+
+	inline FVector GetBlobCenter() const { return bgFrame->blobCenter; }
+
+	inline FVector GetBlobClosest() const { return bgFrame->blobClosest; }
+
+	inline FVector GetBlobTop() const { return bgFrame->blobTop; }
+
+	inline FVector GetBlobLeft() const { return bgFrame->blobLeft; }
+
+	inline FVector GetBlobRight() const { return bgFrame->blobRight; }
+
+	inline FVector GetBlobBottom() const { return bgFrame->blobBottom; }
 private:
 	// Core SDK handles
 
@@ -150,6 +175,7 @@ private:
 		void operator()(PXCCapture::Device* d) { d->Release(); }
 		void operator()(PXC3DScan* sc) { ; }
 		void operator()(PXCFaceModule* sc) { ; }
+		void operator()(PXCBlobModule* bm) { ; }
 	};
 
 	std::unique_ptr<PXCSession, RealSenseDeleter> session;
@@ -164,6 +190,7 @@ private:
 
 	std::unique_ptr<PXC3DScan, RealSenseDeleter> p3DScan;
 	std::unique_ptr<PXCFaceModule, RealSenseDeleter> pFace;
+	std::unique_ptr<PXCBlobModule, RealSenseDeleter> pBlob;
 
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
@@ -171,6 +198,7 @@ private:
 	std::atomic_bool bCameraStreamingEnabled;
 	std::atomic_bool bScan3DEnabled;
 	std::atomic_bool bFaceEnabled;
+	std::atomic_bool bBlobEnabled;
 
 	// Camera processing members
 
@@ -211,6 +239,11 @@ private:
 
 	PXCFaceConfiguration* faceConfig;
 	PXCFaceData* faceData;
+
+	// Blob Module members
+		
+	PXCBlobConfiguration* blobConfig;
+	PXCBlobData* blobData;
 
 	// Helper Functions
 
