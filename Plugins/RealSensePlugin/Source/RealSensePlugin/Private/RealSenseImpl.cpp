@@ -50,11 +50,13 @@ RealSenseImpl::RealSenseImpl()
 
 	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
 	pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(nullptr);
+	pBlob = std::unique_ptr<PXCBlobModule, RealSenseDeleter>(nullptr);
 
 	RealSenseFeatureSet = 0;
 	bCameraStreamingEnabled = false;
 	bScan3DEnabled = false;
 	bFaceEnabled = false;
+	bBlobEnabled = false;
 
 	bCameraThreadRunning = false;
 
@@ -125,6 +127,10 @@ void RealSenseImpl::CameraThread()
 		faceData = pFace->CreateOutput();
 	}
 
+	if (bBlobEnabled) {
+		blobData = pBlob->CreateOutput();
+	}
+
 	while (bCameraThreadRunning == true) {
 		// Acquires new camera frame
 		status = senseManager->AcquireFrame(true);
@@ -188,6 +194,37 @@ void RealSenseImpl::CameraThread()
 				}
 			}
 		}
+
+		if (bBlobEnabled) {
+			blobData->Update();
+			bgFrame->blobCount = blobData->QueryNumberOfBlobs();
+			if (bgFrame->blobCount > 0) {
+				PXCBlobData::IBlob *pBlob = {};
+				blobData->QueryBlob(0, PXCBlobData::SEGMENTATION_IMAGE_DEPTH, PXCBlobData::ACCESS_ORDER_LARGE_TO_SMALL, pBlob);
+
+				if(pBlob) {
+					bgFrame->blobPixels.push_back(pBlob->QueryPixelCount());
+
+					PXCPoint3DF32 center = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_CENTER);
+					bgFrame->blobCenter = FVector(center.x, center.y, center.z);
+
+					PXCPoint3DF32 closest = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_CLOSEST);
+					bgFrame->blobClosest = FVector(closest.x, closest.y, closest.z);
+
+					PXCPoint3DF32 top = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_TOP_MOST);
+					bgFrame->blobTop = FVector(top.x, top.y, top.z);
+
+					PXCPoint3DF32 bottom = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_BOTTOM_MOST);
+					bgFrame->blobBottom = FVector(bottom.x, bottom.y, bottom.z);
+
+					PXCPoint3DF32 left = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_LEFT_MOST);
+					bgFrame->blobLeft = FVector(left.x, left.y, left.z);
+
+					PXCPoint3DF32 right = pBlob->QueryExtremityPoint(PXCBlobData::EXTREMITY_RIGHT_MOST);
+					bgFrame->blobRight = FVector(right.x, right.y, right.z);
+				}
+			}
+		}
 		
 		senseManager->ReleaseFrame();
 
@@ -238,6 +275,10 @@ void RealSenseImpl::EnableMiddleware()
 		senseManager->EnableFace();
 		pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(senseManager->QueryFace());
 	}
+	if (bBlobEnabled) {
+		senseManager->EnableBlob();
+		pBlob = std::unique_ptr<PXCBlobModule, RealSenseDeleter>(senseManager->QueryBlob());
+	}
 }
 
 void RealSenseImpl::EnableFeature(RealSenseFeature feature)
@@ -251,6 +292,9 @@ void RealSenseImpl::EnableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::HEAD_TRACKING:
 		bFaceEnabled = true;
+		return;
+	case RealSenseFeature::BLOB_TRACKING:
+		bBlobEnabled = true;
 		return;
 	}
 }
@@ -266,6 +310,9 @@ void RealSenseImpl::DisableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::HEAD_TRACKING:
 		bFaceEnabled = false;
+		return;
+	case RealSenseFeature::BLOB_TRACKING:
+		bBlobEnabled = true;
 		return;
 	}
 }
