@@ -247,3 +247,38 @@ FRotator ARealSenseSessionManager::GetHeadRotation() const
 {
 	return impl->GetHeadRotation();
 }
+
+int ARealSenseSessionManager::GetBlobCount() const
+{
+	return impl->GetBlobCount();
+}
+
+FVector ARealSenseSessionManager::GetBlobCenter() const
+{
+	return impl->GetBlobCenter();
+}
+
+FVector ARealSenseSessionManager::GetBlobClosest() const
+{
+	return impl->GetBlobClosest();
+}
+
+FVector ARealSenseSessionManager::GetBlobTop() const
+{
+	return impl->GetBlobTop();
+}
+
+FVector ARealSenseSessionManager::GetBlobBottom() const
+{
+	return impl->GetBlobBottom();
+}
+
+FVector ARealSenseSessionManager::GetBlobLeft() const
+{
+	return impl->GetBlobLeft();
+}
+
+FVector ARealSenseSessionManager::GetBlobRight() const
+{
+	return impl->GetBlobRight();
+}
