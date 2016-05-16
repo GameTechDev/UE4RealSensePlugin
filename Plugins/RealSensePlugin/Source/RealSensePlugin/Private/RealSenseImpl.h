@@ -150,6 +150,7 @@ private:
 		void operator()(PXCCapture::Device* d) { d->Release(); }
 		void operator()(PXC3DScan* sc) { ; }
 		void operator()(PXCFaceModule* sc) { ; }
+		void operator()(PXC3DSeg* s) { ; }
 	};
 
 	std::unique_ptr<PXCSession, RealSenseDeleter> session;
@@ -164,6 +165,7 @@ private:
 
 	std::unique_ptr<PXC3DScan, RealSenseDeleter> p3DScan;
 	std::unique_ptr<PXCFaceModule, RealSenseDeleter> pFace;
+	std::unique_ptr<PXC3DSeg, RealSenseDeleter> p3DSeg;
 
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
@@ -171,6 +173,7 @@ private:
 	std::atomic_bool bCameraStreamingEnabled;
 	std::atomic_bool bScan3DEnabled;
 	std::atomic_bool bFaceEnabled;
+	std::atomic_bool bSeg3DEnabled;
 
 	// Camera processing members
 

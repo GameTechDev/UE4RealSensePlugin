@@ -134,7 +134,18 @@ void RealSenseImpl::CameraThread()
 
 		// Performs Core SDK and middleware processing and store results 
 		// in background RealSenseDataFrame
-		if (bCameraStreamingEnabled) {
+
+		if (bSeg3DEnabled)
+		{
+			PXCImage* segmentedImage = p3DSeg->AcquireSegmentedImage();
+			if (segmentedImage)
+			{
+				CopySegmentedImageToBuffer(segmentedImage, bgFrame->colorImage, colorResolution.width, colorResolution.height);
+				SAFE_RELEASE(segmentedImage);
+			}
+		}
+
+		else if (bCameraStreamingEnabled) {
 			PXCCapture::Sample* sample = senseManager->QuerySample();
 
 			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
@@ -238,6 +249,11 @@ void RealSenseImpl::EnableMiddleware()
 		senseManager->EnableFace();
 		pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(senseManager->QueryFace());
 	}
+	if (bSeg3DEnabled)
+	{
+		senseManager->Enable3DSeg();
+		p3DSeg = std::unique_ptr<PXC3DSeg, RealSenseDeleter>(senseManager->Query3DSeg());
+	}
 }
 
 void RealSenseImpl::EnableFeature(RealSenseFeature feature)
@@ -251,6 +267,9 @@ void RealSenseImpl::EnableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::HEAD_TRACKING:
 		bFaceEnabled = true;
+		return;
+	case RealSenseFeature::SEGMENTATION_3D:
+		bSeg3DEnabled = true;
 		return;
 	}
 }
@@ -266,6 +285,9 @@ void RealSenseImpl::DisableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::HEAD_TRACKING:
 		bFaceEnabled = false;
+		return;
+	case RealSenseFeature::SEGMENTATION_3D:
+		bSeg3DEnabled = false;
 		return;
 	}
 }

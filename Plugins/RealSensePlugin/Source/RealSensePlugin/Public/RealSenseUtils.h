@@ -55,6 +55,9 @@ PXC3DScan::FileFormat GetPXCScanFileFormat(EScan3DFileFormat format);
 // Copies the data from the input color PXCImage into the input data structure.
 void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height);
 
+// Copies the data from the input color PXCImage into the input data structure.
+void CopySegmentedImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height);
+
 // Copies the data from the input depth PXCImage into the input data structure.
 void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height);
 

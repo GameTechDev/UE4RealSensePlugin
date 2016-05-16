@@ -152,6 +152,35 @@ void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 w
 
 // Original function borrowed from RSSDK sp_glut_utils.h
 // Copies the data from the PXCImage into the input data buffer.
+void CopySegmentedImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height)
+{
+	assert(image != nullptr);
+
+	// Extracts the raw data from the PXCImage object.
+	PXCImage::ImageData imageData;
+	pxcStatus result = image->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PIXEL_FORMAT_RGB32, &imageData);
+	if (result != PXC_STATUS_NO_ERROR) {
+		return;
+	}
+
+	uint32 i = 0;
+	const char GREY = 0x7f;
+	for (uint32 y = 0; y < height; ++y) {
+		// color points to one row of color image data.
+		const pxcBYTE* color = imageData.planes[0] + (imageData.pitches[0] * y);
+		for (uint32 x = 0; x < width; ++x, color += 4) {
+			data[i++] = color[0];
+			data[i++] = color[1];
+			data[i++] = color[2];
+			data[i++] = color[3];
+		}
+	}
+
+	image->ReleaseAccess(&imageData);
+}
+
+// Original function borrowed from RSSDK sp_glut_utils.h
+// Copies the data from the PXCImage into the input data buffer.
 void CopyDepthImageToBuffer(PXCImage* image, TArray<uint16>& data, const uint32 width, const uint32 height)
 {
 	assert(image != nullptr);

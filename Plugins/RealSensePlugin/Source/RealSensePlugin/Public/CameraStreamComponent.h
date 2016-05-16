@@ -47,6 +47,12 @@ class UCameraStreamComponent : public URealSenseComponent
 	UFUNCTION(BlueprintCallable, Category = "RealSense")
 	virtual void SetDepthCameraResolution(EDepthResolution Resolution) override;
 
+	// Enable 3D segmentation
+	// This function must be called before StartCamera() in order to
+	// enable 3D segmentation.
+	UFUNCTION(BlueprintCallable, Category = "RealSense")
+	virtual void Enable3DSegmentation(bool b3DSeg);
+
 	UCameraStreamComponent();
 
 	void InitializeComponent() override;

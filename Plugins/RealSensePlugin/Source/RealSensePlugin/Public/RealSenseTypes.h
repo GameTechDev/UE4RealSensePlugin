@@ -7,6 +7,7 @@ enum RealSenseFeature : uint8 {
 	CAMERA_STREAMING = 0x1,
 	SCAN_3D = 0x2,
 	HEAD_TRACKING = 0x4,
+	SEGMENTATION_3D = 0x8,
 };
 
 // Resolutions supported by the RealSense RGB camera
