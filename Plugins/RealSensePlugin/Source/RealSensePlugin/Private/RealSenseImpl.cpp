@@ -55,6 +55,7 @@ RealSenseImpl::RealSenseImpl()
 	bCameraStreamingEnabled = false;
 	bScan3DEnabled = false;
 	bFaceEnabled = false;
+	bSeg3DEnabled = false;
 
 	bCameraThreadRunning = false;
 
@@ -251,8 +252,23 @@ void RealSenseImpl::EnableMiddleware()
 	}
 	if (bSeg3DEnabled)
 	{
+		// Not very elegant solution, but it works without code refactoring (for now) and keeps Plugin API
+		senseManager.reset(PXCSenseManager::CreateInstance());
+
 		senseManager->Enable3DSeg();
 		p3DSeg = std::unique_ptr<PXC3DSeg, RealSenseDeleter>(senseManager->Query3DSeg());
+
+		// Adding the selected stream to the StreamProfile filter Set.
+		// If the camera supports HDR and confidence then these profiles are prioritized on the middleware.	
+		PXCCapture::Device::StreamProfileSet profiles = {}; //This is important to initialize all the fields.
+		profiles.color.imageInfo.width = colorResolution.width;
+		profiles.color.imageInfo.height = colorResolution.height;
+
+		profiles.depth.imageInfo.width = depthResolution.width;
+		profiles.depth.imageInfo.height = depthResolution.height;
+
+		// adds the profile to the stream profile Set to filter when init is called.  
+		senseManager->QueryCaptureManager()->FilterByStreamProfiles(&profiles);
 	}
 }
 

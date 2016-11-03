@@ -10,6 +10,9 @@
 #include "RealSenseUtils.h"
 #include "RealSenseBlueprintLibrary.h"
 #include "PXCSenseManager.h"
+#include "pxcfacemodule.h"
+#include "pxc3dseg.h"
+
 
 // Stores all relevant data computed from one frame of RealSense camera data.
 // Advice: Use this structure in a multiple-buffer configuration to share 
