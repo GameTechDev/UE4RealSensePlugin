@@ -104,6 +104,13 @@ void URealSenseComponent::SetDepthCameraResolution(EDepthResolution resolution)
 	}
 }
 
+void URealSenseComponent::Set3DSegCameraResolution(E3DSegResolution resolution)
+{
+	if (resolution != E3DSegResolution::UNDEFINED) {
+		globalRealSenseSession->Set3DSegCameraResolution(resolution);
+	}
+}
+
 bool URealSenseComponent::IsStreamSetValid(EColorResolution ColorResolution, 
 										   EDepthResolution DepthResolution) 
 {

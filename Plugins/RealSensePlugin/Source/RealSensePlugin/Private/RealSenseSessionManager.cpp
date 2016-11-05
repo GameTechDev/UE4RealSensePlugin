@@ -45,6 +45,13 @@ void ARealSenseSessionManager::Tick(float DeltaTime)
 		}
 	}
 
+	if (RealSenseFeatureSet & RealSenseFeature::SEGMENTATION_3D) {
+		// Update the ColorBuffer
+		const uint8 bytesPerPixel = 4;
+		const uint32 ColorImageSize = impl->GetColorImageWidth() * impl->GetColorImageHeight() * bytesPerPixel;
+		FMemory::Memcpy(ColorBuffer.GetData(), impl->GetColorBuffer(), ColorImageSize);
+	}
+
 	if (RealSenseFeatureSet & RealSenseFeature::SCAN_3D) {
 		const uint8 bytesPerPixel = 4;
 		const uint32 Scan3DImageSize = impl->GetScan3DImageWidth() * impl->GetScan3DImageHeight();
@@ -161,6 +168,13 @@ void ARealSenseSessionManager::SetColorCameraResolution(EColorResolution resolut
 void ARealSenseSessionManager::SetDepthCameraResolution(EDepthResolution resolution) 
 { 
 	impl->SetDepthCameraResolution(resolution); 
+}
+
+// Sets the 3DSeg mode resolution and resizes the ColorBuffer to match
+void ARealSenseSessionManager::Set3DSegCameraResolution(E3DSegResolution resolution)
+{
+	impl->Set3DSegCameraResolution(resolution);
+	ColorBuffer.SetNumUninitialized(impl->GetColorImageWidth() * impl->GetColorImageHeight());
 }
 
 FStreamResolution ARealSenseSessionManager::GetColorCameraResolution() const

@@ -64,13 +64,3 @@ void UCameraStreamComponent::SetDepthCameraResolution(EDepthResolution resolutio
 											   PF_B8G8R8A8);
 	DepthTexture->UpdateResource();
 }
-
-// Enable 3D segmentation.
-void UCameraStreamComponent::Enable3DSegmentation(bool b3DSeg)
-{
-	if (b3DSeg)
-	{
-		m_feature = RealSenseFeature::SEGMENTATION_3D;
-		Super::EnableFeature();
-	}
-}

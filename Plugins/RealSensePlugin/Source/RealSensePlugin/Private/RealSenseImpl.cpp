@@ -253,7 +253,7 @@ void RealSenseImpl::EnableMiddleware()
 	if (bSeg3DEnabled)
 	{
 		// Not very elegant solution, but it works without code refactoring (for now) and keeps Plugin API
-		senseManager.reset(PXCSenseManager::CreateInstance());
+		//senseManager.reset(PXCSenseManager::CreateInstance());
 
 		senseManager->Enable3DSeg();
 		p3DSeg = std::unique_ptr<PXC3DSeg, RealSenseDeleter>(senseManager->Query3DSeg());
@@ -371,6 +371,25 @@ void RealSenseImpl::SetDepthCameraResolution(EDepthResolution resolution)
 		midFrame->depthImage.SetNumZeroed(depthImageSize);
 		fgFrame->depthImage.SetNumZeroed(depthImageSize);
 	}
+}
+
+// Enables the color camera stream of the SenseManager using the specified resolution
+// and resizes the colorImage and depthImage buffer of the RealSenseDataFrames to match.
+void RealSenseImpl::Set3DSegCameraResolution(E3DSegResolution resolution)
+{
+	colorResolution = GetE3DSegResolutionValue(resolution);
+
+	const uint8 bytesPerPixel = 4;
+	const uint32 colorImageSize = colorResolution.width * colorResolution.height * bytesPerPixel;
+	bgFrame->colorImage.SetNumZeroed(colorImageSize);
+	midFrame->colorImage.SetNumZeroed(colorImageSize);
+	fgFrame->colorImage.SetNumZeroed(colorImageSize);
+
+	depthResolution = { 640, 480, 30.0f, ERealSensePixelFormat::DEPTH_G16_MM };
+	const uint32 depthImageSize = depthResolution.width * depthResolution.height;
+	bgFrame->depthImage.SetNumZeroed(depthImageSize);
+	midFrame->depthImage.SetNumZeroed(depthImageSize);
+	fgFrame->depthImage.SetNumZeroed(depthImageSize);
 }
 
 // Creates a StreamProfile for the specified color and depth resolutions and

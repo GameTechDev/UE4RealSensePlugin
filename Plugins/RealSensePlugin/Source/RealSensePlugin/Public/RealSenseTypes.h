@@ -41,6 +41,17 @@ enum class EDepthResolution : uint8 {
 	RES11 = 11 UMETA(DisplayName = "320 x 240 x 30 (R200)"),
 };
 
+// Resolutions supported by the RealSense SR300 camera in 3DSeg mode
+UENUM(BlueprintType)
+enum class E3DSegResolution : uint8 {
+	UNDEFINED = 0 UMETA(DisplayName = " "),
+	RES1 = 1 UMETA(DisplayName = "color:  640 x 360, depth: 640 x 480"),
+	RES2 = 2 UMETA(DisplayName = "color:  960 x 540, depth: 640 x 480"),
+	RES3 = 3 UMETA(DisplayName = "color: 1280 x 720, depth: 640 x 480"),
+	RES4 = 4 UMETA(DisplayName = "color:  320 x 240, depth: 640 x 480"),
+	RES5 = 5 UMETA(DisplayName = "color:  640 x 480, depth: 640 x 480"),
+};
+
 // RSSDK Pixel Format exposed to Blueprint (see pxcimage.h)
 UENUM(BlueprintType) 
 enum class ERealSensePixelFormat : uint8 {

@@ -103,6 +103,8 @@ public:
 
 	void SetDepthCameraResolution(EDepthResolution resolution);
 
+	void Set3DSegCameraResolution(E3DSegResolution resolution);
+
 	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) const;
 
 	inline const uint8* GetColorBuffer() const { return fgFrame->colorImage.GetData(); }

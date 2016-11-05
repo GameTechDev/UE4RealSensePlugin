@@ -122,6 +122,27 @@ FStreamResolution GetEDepthResolutionValue(EDepthResolution res)
 	}
 }
 
+// Extracts the width, height, and fps values from each enumerated resolution.
+// Note: The only color pixel format currently supported is RGB32.
+FStreamResolution GetE3DSegResolutionValue(E3DSegResolution res)
+{
+	FStreamResolution resolution = {};
+	switch (res) {
+	case E3DSegResolution::RES1:
+		return{ 640, 360, 30.0f, ERealSensePixelFormat::COLOR_RGB32 };
+	case E3DSegResolution::RES2:
+		return{ 960, 540, 30.0f, ERealSensePixelFormat::COLOR_RGB32 };
+	case E3DSegResolution::RES3:
+		return{ 1280, 720, 30.0f, ERealSensePixelFormat::COLOR_RGB32 };
+	case E3DSegResolution::RES4:
+		return{ 320, 240, 30.0f, ERealSensePixelFormat::COLOR_RGB32 };
+	case E3DSegResolution::RES5:
+		return{ 640, 480, 30.0f, ERealSensePixelFormat::COLOR_RGB32 };
+	default:
+		return{ 0, 0, 0.0f, ERealSensePixelFormat::PIXEL_FORMAT_ANY };
+	}
+}
+
 // Original function borrowed from RSSDK sp_glut_utils.h
 // Copies the data from the PXCImage into the input data buffer.
 void CopyColorImageToBuffer(PXCImage* image, TArray<uint8>& data, const uint32 width, const uint32 height)

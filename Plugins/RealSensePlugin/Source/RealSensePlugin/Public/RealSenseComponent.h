@@ -70,7 +70,6 @@ class URealSenseComponent : public UActorComponent
 	FStreamResolution GetColorCameraResolution();
 
 	// Sets the color camera resolution from an enumerated set of resolution options.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") 
 	virtual void SetColorCameraResolution(EColorResolution resolution);
 
 	// Returns the depth camera resolution as an FStreamResolution object: 
@@ -79,8 +78,10 @@ class URealSenseComponent : public UActorComponent
 	FStreamResolution GetDepthCameraResolution();
 
 	// Sets the depth camera resolution from an enumerated set of resolution options.
-	UFUNCTION(BlueprintCallable, Category = "RealSense") 
 	virtual void SetDepthCameraResolution(EDepthResolution resolution);
+
+	// Sets the 3DSeg mode resolution from an enumerated set of resolution options.
+	virtual void Set3DSegCameraResolution(E3DSegResolution resolution);
 
 	// Returns true if the combination of color and depth camera resolutions can be 
 	// used together. Call this function before setting either the color and depth 

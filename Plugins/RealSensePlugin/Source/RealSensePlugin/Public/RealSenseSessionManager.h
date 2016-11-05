@@ -74,6 +74,9 @@ class ARealSenseSessionManager : public AActor
 	// Set the resolution to be used by the RealSense depth camera.
 	void SetDepthCameraResolution(EDepthResolution resolution);
 
+	// Set the resolution to be used by the RealSense 3DSeg mode.
+	void Set3DSegCameraResolution(E3DSegResolution resolution);
+
 	// Returns true if the combination of RGB camera resolution and depth camera 
 	// resolution is valid. Validity is determined internally by the RSSDK.
 	bool IsStreamSetValid(EColorResolution ColorResolution, EDepthResolution DepthResolution) const;

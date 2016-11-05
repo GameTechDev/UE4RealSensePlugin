@@ -1,13 +1,13 @@
 #pragma once
 
 #include "RealSenseComponent.h"
-#include "CameraStreamComponent.generated.h"
+#include "UserSegmentationComponent.generated.h"
 
 // This component provides access to a buffer of RGB camera data and 
 // a buffer of depth camera data, as well as convenient Texture objects
 // for displaying this data.
-UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSense) 
-class UCameraStreamComponent : public URealSenseComponent
+UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSense)
+class UUserSegmentationComponent : public URealSenseComponent
 {
 	GENERATED_UCLASS_BODY()
 
@@ -20,7 +20,6 @@ class UCameraStreamComponent : public URealSenseComponent
 	// Array of depth values (in millimeters) stored as a single frame of video 
 	// captured by the RealSense depth camera at the resolution specified by 
 	// calling SetDepthCameraResolution(). 
-	UPROPERTY(BlueprintReadOnly, Category = "RealSense") 
 	TArray<int32> DepthBuffer;
 
 	// Texture2D object used to easily visualize the ColorBuffer. 
@@ -32,22 +31,15 @@ class UCameraStreamComponent : public URealSenseComponent
 	// Texture2D object used to easily visualize the DepthBuffer. 
 	// This texture is initialized upon setting the color camera resolution, and 
 	// should be set by calling DepthBufferToTexture().
-	UPROPERTY(BlueprintReadOnly, Category = "RealSense") 
 	UTexture2D* DepthTexture;
 
-	// Sets the resolution that the RealSense RGB camera should use. 
+	// Sets the resolution that the RealSense 3DSeg mode should use. 
 	// This function must be called before StartCamera() in order to 
-	// enable the RGB camera.
+	// enable the 3DSeg mode.
 	UFUNCTION(BlueprintCallable, Category = "RealSense") 
-	virtual void SetColorCameraResolution(EColorResolution Resolution) override;
+	virtual void Set3DSegCameraResolution(E3DSegResolution Resolution) override;
 
-	// Sets the resolution that the RealSense depth camera should use. 
-	// This function must be called before StartCamera() in order to 
-	// enable the depth camera.
-	UFUNCTION(BlueprintCallable, Category = "RealSense")
-	virtual void SetDepthCameraResolution(EDepthResolution Resolution) override;
-
-	UCameraStreamComponent();
+	UUserSegmentationComponent();
 
 	void InitializeComponent() override;
 

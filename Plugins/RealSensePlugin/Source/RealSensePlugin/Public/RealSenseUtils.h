@@ -43,6 +43,9 @@ FStreamResolution GetEColorResolutionValue(EColorResolution res);
 // Returns a StreamResolution structure containing the values from the enumerated DepthResolution
 FStreamResolution GetEDepthResolutionValue(EDepthResolution res);
 
+// Returns a StreamResolution structure containing the values from the enumerated 3DSegResolution
+FStreamResolution GetE3DSegResolutionValue(E3DSegResolution res);
+
 // Converts a Blueprint-exposed RealSensePixelFormat to a PXCImage::PixelFormat
 PXCImage::PixelFormat GetPXCPixelFormat(ERealSensePixelFormat format);
 
