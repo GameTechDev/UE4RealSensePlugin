@@ -32,7 +32,7 @@ struct RealSenseDataFrame {
 	FVector headPosition;
 	FRotator headRotation;
 
-	RealSenseDataFrame() : number(0), headCount(0) {}
+	RealSenseDataFrame() : number(0), headCount(0), headPosition(0.0f, 0.0f, 0.0f), headRotation(0.0f, 0.0f, 0.0f) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -161,10 +161,10 @@ private:
 	std::unique_ptr<PXCSession, RealSenseDeleter> session;
 	std::unique_ptr<PXCSenseManager, RealSenseDeleter> senseManager;
 	std::unique_ptr<PXCCapture, RealSenseDeleter> capture;
-	std::unique_ptr<PXCCapture::Device, RealSenseDeleter> device;
+	std::unique_ptr<PXCCapture::Device, RealSenseDeleter> m_device;
 
 	PXCCapture::DeviceInfo deviceInfo;
-	pxcStatus status;  // Status ID used by RSSDK functions
+	pxcStatus m_status;  // Status ID used by RSSDK functions
 
 	// SDK Module handles
 

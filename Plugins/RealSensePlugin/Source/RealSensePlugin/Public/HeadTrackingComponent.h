@@ -24,5 +24,4 @@ class UHeadTrackingComponent : public URealSenseComponent
 	void TickComponent(float DeltaTime, enum ELevelTick TickType, 
 		               FActorComponentTickFunction *ThisTickFunction) override;
 
-private:
 };

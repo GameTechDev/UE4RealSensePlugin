@@ -15,7 +15,7 @@ RealSenseImpl::RealSenseImpl()
 	assert(senseManager != nullptr);
 
 	capture = std::unique_ptr<PXCCapture, RealSenseDeleter>(nullptr);
-	device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(nullptr);
+	m_device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(nullptr);
 	deviceInfo = {};
 
 	// Loop through video capture devices to find a RealSense Camera
@@ -23,7 +23,7 @@ RealSenseImpl::RealSenseImpl()
 	desc1.group = PXCSession::IMPL_GROUP_SENSOR;
 	desc1.subgroup = PXCSession::IMPL_SUBGROUP_VIDEO_CAPTURE;
 	for (int m = 0; ; m++) {
-		if (device)
+		if (m_device)
 			break;
 
 		PXCSession::ImplDesc desc2 = {};
@@ -43,7 +43,7 @@ RealSenseImpl::RealSenseImpl()
 				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_R200) ||
 				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_R200_ENHANCED) ||
 				(deviceInfo.model == PXCCapture::DeviceModel::DEVICE_MODEL_SR300)) {
-				device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(capture->CreateDevice(j));
+				m_device = std::unique_ptr<PXCCapture::Device, RealSenseDeleter>(capture->CreateDevice(j));
 			}
 		}
 	}
@@ -66,18 +66,18 @@ RealSenseImpl::RealSenseImpl()
 	colorResolution = {};
 	depthResolution = {};
 
-	if (device == nullptr) {
+	if (m_device == nullptr) {
 		colorHorizontalFOV = 0.0f;
 		colorVerticalFOV = 0.0f;
 		depthHorizontalFOV = 0.0f;
 		depthVerticalFOV = 0.0f;
 	} 
 	else {
-		PXCPointF32 cfov = device->QueryColorFieldOfView();
+		PXCPointF32 cfov = m_device->QueryColorFieldOfView();
 		colorHorizontalFOV = cfov.x;
 		colorVerticalFOV = cfov.y;
 
-		PXCPointF32 dfov = device->QueryDepthFieldOfView();
+		PXCPointF32 dfov = m_device->QueryDepthFieldOfView();
 		depthHorizontalFOV = dfov.x;
 		depthVerticalFOV = dfov.y;
 	}
@@ -121,6 +121,22 @@ void RealSenseImpl::CameraThread()
 	RS_LOG_STATUS(status, "SenseManager Initialized")
 
 	assert(status == PXC_STATUS_NO_ERROR);
+
+	PXCCapture::Device* device = nullptr;
+	PXCCapture::Device::MirrorMode MirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
+	PXCCapture::Device::MirrorMode NewMirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
+	if (bSeg3DEnabled)
+	{
+		// Get pointer to active device
+		device = senseManager->QueryCaptureManager()->QueryDevice();
+		if (device)
+		{
+			// Mirror mode
+			NewMirrorMode = PXCCapture::Device::MIRROR_MODE_HORIZONTAL;
+			MirrorMode = device->QueryMirrorMode();
+			device->SetMirrorMode(NewMirrorMode);
+		}
+	}
 
 	if (bFaceEnabled) {
 		faceData = pFace->CreateOutput();
@@ -196,6 +212,18 @@ void RealSenseImpl::CameraThread()
 
 					PXCFaceData::PoseEulerAngles headRotation = {};
 					poseData->QueryPoseAngles(&headRotation);
+					headRotation.pitch = FMath::Clamp<float>(headRotation.pitch, -90.0f, 90.0f);
+					headRotation.yaw = FMath::Clamp<float>(headRotation.yaw, -90.0f, 90.0f);
+					headRotation.roll = FMath::Clamp<float>(headRotation.roll, -90.0f, 90.0f);
+					if (NewMirrorMode == PXCCapture::Device::MIRROR_MODE_HORIZONTAL) {
+						headRotation.pitch /= -90.0f;
+						headRotation.yaw /= -90.0f;
+						headRotation.roll /= -90.0f;
+					} else {
+						headRotation.pitch /= -90.0f;
+						headRotation.yaw /= 90.0f;
+						headRotation.roll /= -90.0f;
+					}
 					bgFrame->headRotation = FRotator(headRotation.pitch, headRotation.yaw, headRotation.roll);
 				}
 			}
@@ -206,6 +234,12 @@ void RealSenseImpl::CameraThread()
 		// Swaps background and mid RealSenseDataFrames
 		std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
 		bgFrame.swap(midFrame);
+	}
+
+	if (device && bSeg3DEnabled)
+	{
+		// Restore the mirror mode
+		device->SetMirrorMode(MirrorMode);
 	}
 }
 
@@ -252,9 +286,6 @@ void RealSenseImpl::EnableMiddleware()
 	}
 	if (bSeg3DEnabled)
 	{
-		// Not very elegant solution, but it works without code refactoring (for now) and keeps Plugin API
-		//senseManager.reset(PXCSenseManager::CreateInstance());
-
 		senseManager->Enable3DSeg();
 		p3DSeg = std::unique_ptr<PXC3DSeg, RealSenseDeleter>(senseManager->Query3DSeg());
 
@@ -269,6 +300,9 @@ void RealSenseImpl::EnableMiddleware()
 
 		// adds the profile to the stream profile Set to filter when init is called.  
 		senseManager->QueryCaptureManager()->FilterByStreamProfiles(&profiles);
+
+		// enable CPU / GPU processing
+		p3DSeg->QueryInstance<PXCVideoModule>()->SetGPUExec();
 	}
 }
 
@@ -339,12 +373,12 @@ void RealSenseImpl::SetColorCameraResolution(EColorResolution resolution)
 {
 	colorResolution = GetEColorResolutionValue(resolution);
 
-	status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_COLOR, 
+	m_status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_COLOR, 
 										colorResolution.width, 
 										colorResolution.height, 
 										colorResolution.fps);
 
-	assert(status == PXC_STATUS_NO_ERROR);
+	assert(m_status == PXC_STATUS_NO_ERROR);
 
 	const uint8 bytesPerPixel = 4;
 	const uint32 colorImageSize = colorResolution.width * colorResolution.height * bytesPerPixel;
@@ -358,14 +392,14 @@ void RealSenseImpl::SetColorCameraResolution(EColorResolution resolution)
 void RealSenseImpl::SetDepthCameraResolution(EDepthResolution resolution)
 {
 	depthResolution = GetEDepthResolutionValue(resolution);
-	status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_DEPTH, 
+	m_status = senseManager->EnableStream(PXCCapture::StreamType::STREAM_TYPE_DEPTH, 
 										depthResolution.width, 
 										depthResolution.height, 
 										depthResolution.fps);
 
-	assert(status == PXC_STATUS_NO_ERROR);
+	assert(m_status == PXC_STATUS_NO_ERROR);
 
-	if (status == PXC_STATUS_NO_ERROR) {
+	if (m_status == PXC_STATUS_NO_ERROR) {
 		const uint32 depthImageSize = depthResolution.width * depthResolution.height;
 		bgFrame->depthImage.SetNumZeroed(depthImageSize);
 		midFrame->depthImage.SetNumZeroed(depthImageSize);
@@ -422,7 +456,7 @@ bool RealSenseImpl::IsStreamSetValid(EColorResolution ColorResolution, EDepthRes
 	profiles.depth.frameRate = { DRes.fps, DRes.fps };
 	profiles.depth.options = PXCCapture::Device::StreamOption::STREAM_OPTION_ANY;
 
-	return (device->IsStreamProfileSetValid(&profiles) != 0);
+	return (m_device->IsStreamProfileSetValid(&profiles) != 0);
 }
 
 // Creates a new configuration for the 3D Scanning module, specifying the
@@ -444,8 +478,8 @@ void RealSenseImpl::ConfigureScanning(EScan3DMode scanningMode, bool bSolidify, 
 
 	config.startScan = false;
 
-	status = p3DScan->SetConfiguration(config);
-	assert(status == PXC_STATUS_NO_ERROR);
+	m_status = p3DScan->SetConfiguration(config);
+	assert(m_status == PXC_STATUS_NO_ERROR);
 }
 
 // Manually sets the 3D volume in which the 3D scanning module will collect
@@ -458,8 +492,8 @@ void RealSenseImpl::SetScanningVolume(FVector boundingBox, int32 resolution)
 	area.shape.depth = boundingBox.Z;
 	area.resolution = resolution;
 
-	status = p3DScan->SetArea(area);
-	assert(status == PXC_STATUS_NO_ERROR);
+	m_status = p3DScan->SetArea(area);
+	assert(m_status == PXC_STATUS_NO_ERROR);
 }
 
 // Sets the scanStarted flag to true. On the next iteration of the camera

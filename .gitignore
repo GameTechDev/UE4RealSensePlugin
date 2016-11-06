@@ -12,3 +12,4 @@ Content/*.obj
 
 Plugins/RealSensePlugin/Binaries/
 Plugins/RealSensePlugin/Intermediate/
+*.db
