@@ -261,3 +261,13 @@ FRotator ARealSenseSessionManager::GetHeadRotation() const
 {
 	return impl->GetHeadRotation();
 }
+
+FVector ARealSenseSessionManager::GetCursorData() const
+{
+	return impl->GetCursorData();
+}
+
+bool ARealSenseSessionManager::IsCursorDataOk() const
+{
+	return impl->IsCursorDataOk();
+}

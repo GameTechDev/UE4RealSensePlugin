@@ -12,6 +12,9 @@
 #include "PXCSenseManager.h"
 #include "pxcfacemodule.h"
 #include "pxc3dseg.h"
+#include "pxchandcursormodule.h"
+#include "pxccursordata.h"
+#include "pxccursorconfiguration.h"
 
 
 // Stores all relevant data computed from one frame of RealSense camera data.
@@ -32,7 +35,11 @@ struct RealSenseDataFrame {
 	FVector headPosition;
 	FRotator headRotation;
 
-	RealSenseDataFrame() : number(0), headCount(0), headPosition(0.0f, 0.0f, 0.0f), headRotation(0.0f, 0.0f, 0.0f) {}
+	FVector cursorData;
+	bool isCursorDataOk;
+
+	RealSenseDataFrame() : number(0), headCount(0), 
+		headPosition(0.0f), headRotation(0.0f), cursorData(0.0f), isCursorDataOk(false) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -145,6 +152,10 @@ public:
 
 	inline FRotator GetHeadRotation() const { return bgFrame->headRotation; }
 
+	inline FVector GetCursorData() const { return bgFrame->cursorData; }
+
+	inline bool IsCursorDataOk() const { return bgFrame->isCursorDataOk; }
+
 private:
 	// Core SDK handles
 
@@ -156,6 +167,7 @@ private:
 		void operator()(PXC3DScan* sc) { ; }
 		void operator()(PXCFaceModule* sc) { ; }
 		void operator()(PXC3DSeg* s) { ; }
+		void operator()(PXCHandCursorModule* sc) { ; }
 	};
 
 	std::unique_ptr<PXCSession, RealSenseDeleter> session;
@@ -171,6 +183,7 @@ private:
 	std::unique_ptr<PXC3DScan, RealSenseDeleter> p3DScan;
 	std::unique_ptr<PXCFaceModule, RealSenseDeleter> pFace;
 	std::unique_ptr<PXC3DSeg, RealSenseDeleter> p3DSeg;
+	std::unique_ptr<PXCHandCursorModule, RealSenseDeleter> pHandCursor;
 
 	// Feature set constructed as the logical OR of RealSenseFeatures
 	uint32 RealSenseFeatureSet;
@@ -179,6 +192,7 @@ private:
 	std::atomic_bool bScan3DEnabled;
 	std::atomic_bool bFaceEnabled;
 	std::atomic_bool bSeg3DEnabled;
+	std::atomic_bool bHandCursorEnabled;
 
 	// Camera processing members
 

@@ -50,12 +50,14 @@ RealSenseImpl::RealSenseImpl()
 
 	p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(nullptr);
 	pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(nullptr);
+	pHandCursor = std::unique_ptr<PXCHandCursorModule, RealSenseDeleter>(nullptr);
 
 	RealSenseFeatureSet = 0;
 	bCameraStreamingEnabled = false;
 	bScan3DEnabled = false;
 	bFaceEnabled = false;
 	bSeg3DEnabled = false;
+	bHandCursorEnabled = false;
 
 	bCameraThreadRunning = false;
 
@@ -141,6 +143,12 @@ void RealSenseImpl::CameraThread()
 	if (bFaceEnabled) {
 		faceData = pFace->CreateOutput();
 	}
+
+	PXCCursorData *cursorData = nullptr;
+	if (bHandCursorEnabled) {
+		cursorData = pHandCursor->CreateOutput();
+	}
+
 
 	while (bCameraThreadRunning == true) {
 		// Acquires new camera frame
@@ -229,6 +237,25 @@ void RealSenseImpl::CameraThread()
 			}
 		}
 		
+		if (bHandCursorEnabled) {
+			cursorData->Update();
+			// retrieve the cursor data by order-based index
+			PXCCursorData::ICursor *icursor = nullptr;
+			cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, 0, icursor);
+			if (icursor) {
+				PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
+				point.x = (0.5f - point.x) * 2.0f;
+				point.y = (0.5f - point.y) * 2.0f;
+				point.z = (0.5f - point.z) * 2.0f;
+				bgFrame->cursorData = FVector(point.x, point.y, point.z);
+				bgFrame->isCursorDataOk = true;
+			}
+			else {
+				bgFrame->cursorData = FVector::ZeroVector;
+				bgFrame->isCursorDataOk = false;
+			}
+		}
+
 		senseManager->ReleaseFrame();
 
 		// Swaps background and mid RealSenseDataFrames
@@ -304,6 +331,16 @@ void RealSenseImpl::EnableMiddleware()
 		// enable CPU / GPU processing
 		p3DSeg->QueryInstance<PXCVideoModule>()->SetGPUExec();
 	}
+	if (bHandCursorEnabled) {
+		senseManager->EnableHandCursor();
+		pHandCursor = std::unique_ptr<PXCHandCursorModule, RealSenseDeleter>(senseManager->QueryHandCursor());
+		// Get an instance of PXCCursorConfiguration
+		PXCCursorConfiguration* cursorConfig = pHandCursor->CreateActiveConfiguration();
+		// Make configuration changes and apply them
+		cursorConfig->EnableEngagement(true);
+		cursorConfig->EnableAllGestures();
+		cursorConfig->ApplyChanges(); // Changes only take effect when you call ApplyChanges
+	}
 }
 
 void RealSenseImpl::EnableFeature(RealSenseFeature feature)
@@ -320,6 +357,9 @@ void RealSenseImpl::EnableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::SEGMENTATION_3D:
 		bSeg3DEnabled = true;
+		return;
+	case RealSenseFeature::HAND_CURSOR:
+		bHandCursorEnabled = true;
 		return;
 	}
 }
@@ -338,6 +378,9 @@ void RealSenseImpl::DisableFeature(RealSenseFeature feature)
 		return;
 	case RealSenseFeature::SEGMENTATION_3D:
 		bSeg3DEnabled = false;
+		return;
+	case RealSenseFeature::HAND_CURSOR:
+		bHandCursorEnabled = false;
 		return;
 	}
 }

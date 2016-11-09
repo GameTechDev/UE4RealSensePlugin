@@ -156,6 +156,9 @@ class ARealSenseSessionManager : public AActor
 	// Return the current head rotation
 	FRotator GetHeadRotation() const;
 
+	FVector GetCursorData() const;
+	bool IsCursorDataOk() const;
+
 	ARealSenseSessionManager();
 
 	virtual void BeginPlay() override;
