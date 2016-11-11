@@ -6,7 +6,7 @@ UHandCursorComponent::UHandCursorComponent(const class FObjectInitializer& ObjIn
 	: Super(ObjInit) 
 { 
 	HandCursorData = FVector::ZeroVector;
-	IsHandCursorDataOk = false;
+	IsHandCursorDataValid = false;
 
 	m_feature = RealSenseFeature::HAND_CURSOR;
 }
@@ -28,8 +28,8 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	}
 
 	HandCursorData = globalRealSenseSession->GetCursorData();
-	IsHandCursorDataOk = globalRealSenseSession->IsCursorDataOk();
-	if (IsHandCursorDataOk) {
+	IsHandCursorDataValid = globalRealSenseSession->IsCursorDataValid();
+	if (IsHandCursorDataValid) {
 		OnHandCursorData.Broadcast(HandCursorData);
 	}
 }

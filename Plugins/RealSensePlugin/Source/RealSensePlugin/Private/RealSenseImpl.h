@@ -36,10 +36,10 @@ struct RealSenseDataFrame {
 	FRotator headRotation;
 
 	FVector cursorData;
-	bool isCursorDataOk;
+	bool isCursorDataValid;
 
 	RealSenseDataFrame() : number(0), headCount(0), 
-		headPosition(0.0f), headRotation(0.0f), cursorData(0.0f), isCursorDataOk(false) {}
+		headPosition(0.0f), headRotation(0.0f), cursorData(0.0f), isCursorDataValid(false) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -146,15 +146,15 @@ public:
 
 	// Head Tracking Support
 
-	inline int GetHeadCount() const { return bgFrame->headCount; }
+	inline int GetHeadCount() const { return fgFrame->headCount; }
 
-	inline FVector GetHeadPosition() const { return bgFrame->headPosition; }
+	inline FVector GetHeadPosition() const { return fgFrame->headPosition; }
 
-	inline FRotator GetHeadRotation() const { return bgFrame->headRotation; }
+	inline FRotator GetHeadRotation() const { return fgFrame->headRotation; }
 
-	inline FVector GetCursorData() const { return bgFrame->cursorData; }
+	inline FVector GetCursorData() const { return fgFrame->cursorData; }
 
-	inline bool IsCursorDataOk() const { return bgFrame->isCursorDataOk; }
+	inline bool IsCursorDataValid() const { return fgFrame->isCursorDataValid; }
 
 private:
 	// Core SDK handles

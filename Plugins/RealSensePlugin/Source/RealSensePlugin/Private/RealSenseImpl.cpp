@@ -248,11 +248,11 @@ void RealSenseImpl::CameraThread()
 				point.y = (0.5f - point.y) * 2.0f;
 				point.z = (0.5f - point.z) * 2.0f;
 				bgFrame->cursorData = FVector(point.x, point.y, point.z);
-				bgFrame->isCursorDataOk = true;
+				bgFrame->isCursorDataValid = true;
 			}
 			else {
 				bgFrame->cursorData = FVector::ZeroVector;
-				bgFrame->isCursorDataOk = false;
+				bgFrame->isCursorDataValid = false;
 			}
 		}
 
@@ -337,7 +337,7 @@ void RealSenseImpl::EnableMiddleware()
 		// Get an instance of PXCCursorConfiguration
 		PXCCursorConfiguration* cursorConfig = pHandCursor->CreateActiveConfiguration();
 		// Make configuration changes and apply them
-		cursorConfig->EnableEngagement(true);
+		//cursorConfig->EnableEngagement(true);
 		cursorConfig->EnableAllGestures();
 		cursorConfig->ApplyChanges(); // Changes only take effect when you call ApplyChanges
 	}

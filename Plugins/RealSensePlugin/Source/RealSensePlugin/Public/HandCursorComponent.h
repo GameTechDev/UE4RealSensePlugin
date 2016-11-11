@@ -16,7 +16,7 @@ class UHandCursorComponent : public URealSenseComponent
 	FVector HandCursorData;
 
 	UPROPERTY(BlueprintReadOnly, Category = "RealSense")
-	bool IsHandCursorDataOk;
+	bool IsHandCursorDataValid;
 
 	UPROPERTY(BlueprintAssignable, Category = "RealSense")
 	FHandCursorDataDelegate OnHandCursorData;

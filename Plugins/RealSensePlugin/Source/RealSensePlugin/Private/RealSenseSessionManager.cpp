@@ -267,7 +267,7 @@ FVector ARealSenseSessionManager::GetCursorData() const
 	return impl->GetCursorData();
 }
 
-bool ARealSenseSessionManager::IsCursorDataOk() const
+bool ARealSenseSessionManager::IsCursorDataValid() const
 {
-	return impl->IsCursorDataOk();
+	return impl->IsCursorDataValid();
 }

@@ -157,7 +157,7 @@ class ARealSenseSessionManager : public AActor
 	FRotator GetHeadRotation() const;
 
 	FVector GetCursorData() const;
-	bool IsCursorDataOk() const;
+	bool IsCursorDataValid() const;
 
 	ARealSenseSessionManager();
 
