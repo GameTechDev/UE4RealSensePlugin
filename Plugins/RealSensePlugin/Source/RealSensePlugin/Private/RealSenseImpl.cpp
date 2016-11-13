@@ -238,21 +238,41 @@ void RealSenseImpl::CameraThread()
 		}
 		
 		if (bHandCursorEnabled) {
+			bgFrame->cursorData = FVector::ZeroVector;
+			bgFrame->isCursorDataValid = false;
+			bgFrame->cursorDataLeft = FVector::ZeroVector;
+			bgFrame->isCursorDataLeftValid = false;
+			bgFrame->cursorDataRight = FVector::ZeroVector;
+			bgFrame->isCursorDataRightValid = false;
+
 			cursorData->Update();
-			// retrieve the cursor data by order-based index
-			PXCCursorData::ICursor *icursor = nullptr;
-			cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, 0, icursor);
-			if (icursor) {
-				PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
-				point.x = (0.5f - point.x) * 2.0f;
-				point.y = (0.5f - point.y) * 2.0f;
-				point.z = (0.5f - point.z) * 2.0f;
-				bgFrame->cursorData = FVector(point.x, point.y, point.z);
-				bgFrame->isCursorDataValid = true;
-			}
-			else {
-				bgFrame->cursorData = FVector::ZeroVector;
-				bgFrame->isCursorDataValid = false;
+			int nCursors = cursorData->QueryNumberOfCursors();
+			nCursors = std::min<int>(nCursors, 2);
+			for (int i = 0; i < nCursors; ++i) {
+				// retrieve the cursor data by order-based index
+				PXCCursorData::ICursor *icursor = nullptr;
+				PXCCursorData::BodySideType bodySide = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+				cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, i, icursor);
+				if (icursor) {
+					bodySide = icursor->QueryBodySide();
+					PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
+					point.x = (0.5f - point.x) * 2.0f;
+					point.y = (0.5f - point.y) * 2.0f;
+					point.z = (0.5f - point.z) * 2.0f;
+					FVector vec = FVector(point.x, point.y, point.z);
+					if (i == 0) {
+						bgFrame->cursorData = vec;
+						bgFrame->isCursorDataValid = true;
+					}
+					if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_LEFT) {
+						bgFrame->cursorDataLeft = vec;
+						bgFrame->isCursorDataLeftValid = true;
+					} 
+					else if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_RIGHT) {
+						bgFrame->cursorDataRight = vec;
+						bgFrame->isCursorDataRightValid = true;
+					}
+				}
 			}
 		}
 

@@ -159,6 +159,12 @@ class ARealSenseSessionManager : public AActor
 	FVector GetCursorData() const;
 	bool IsCursorDataValid() const;
 
+	FVector GetCursorDataLeft() const;
+	bool IsCursorDataLeftValid() const;
+
+	FVector GetCursorDataRight() const;
+	bool IsCursorDataRightValid() const;
+
 	ARealSenseSessionManager();
 
 	virtual void BeginPlay() override;

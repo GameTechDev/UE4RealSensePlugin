@@ -7,6 +7,10 @@ UHandCursorComponent::UHandCursorComponent(const class FObjectInitializer& ObjIn
 { 
 	HandCursorData = FVector::ZeroVector;
 	IsHandCursorDataValid = false;
+	HandCursorDataLeft = FVector::ZeroVector;
+	IsHandCursorDataLeftValid = false;
+	HandCursorDataRight = FVector::ZeroVector;
+	IsHandCursorDataRightValid = false;
 
 	m_feature = RealSenseFeature::HAND_CURSOR;
 }
@@ -20,10 +24,12 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	                                 FActorComponentTickFunction *ThisTickFunction) 
 {
 	if (globalRealSenseSession->IsCameraRunning() == false) {
-		if (!HandCursorData.IsZero()) {
-			HandCursorData = FVector::ZeroVector;
-			OnHandCursorData.Broadcast(HandCursorData);
-		}
+		HandCursorData = FVector::ZeroVector;
+		IsHandCursorDataValid = false;
+		HandCursorDataLeft = FVector::ZeroVector;
+		IsHandCursorDataLeftValid = false;
+		HandCursorDataRight = FVector::ZeroVector;
+		IsHandCursorDataRightValid = false;
 		return;
 	}
 
@@ -31,5 +37,17 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	IsHandCursorDataValid = globalRealSenseSession->IsCursorDataValid();
 	if (IsHandCursorDataValid) {
 		OnHandCursorData.Broadcast(HandCursorData);
+	}
+
+	HandCursorDataLeft = globalRealSenseSession->GetCursorDataLeft();
+	IsHandCursorDataLeftValid = globalRealSenseSession->IsCursorDataLeftValid();
+	if (IsHandCursorDataLeftValid) {
+		OnHandCursorDataLeft.Broadcast(HandCursorDataLeft);
+	}
+
+	HandCursorDataRight = globalRealSenseSession->GetCursorDataRight();
+	IsHandCursorDataRightValid = globalRealSenseSession->IsCursorDataRightValid();
+	if (IsHandCursorDataRightValid) {
+		OnHandCursorDataRight.Broadcast(HandCursorDataRight);
 	}
 }

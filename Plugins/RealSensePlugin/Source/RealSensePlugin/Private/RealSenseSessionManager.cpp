@@ -271,3 +271,23 @@ bool ARealSenseSessionManager::IsCursorDataValid() const
 {
 	return impl->IsCursorDataValid();
 }
+
+FVector ARealSenseSessionManager::GetCursorDataLeft() const
+{
+	return impl->GetCursorDataLeft();
+}
+
+bool ARealSenseSessionManager::IsCursorDataLeftValid() const
+{
+	return impl->IsCursorDataLeftValid();
+}
+
+FVector ARealSenseSessionManager::GetCursorDataRight() const
+{
+	return impl->GetCursorDataRight();
+}
+
+bool ARealSenseSessionManager::IsCursorDataRightValid() const
+{
+	return impl->IsCursorDataRightValid();
+}

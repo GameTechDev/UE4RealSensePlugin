@@ -37,9 +37,16 @@ struct RealSenseDataFrame {
 
 	FVector cursorData;
 	bool isCursorDataValid;
+	FVector cursorDataLeft;
+	bool isCursorDataLeftValid;
+	FVector cursorDataRight;
+	bool isCursorDataRightValid;
 
 	RealSenseDataFrame() : number(0), headCount(0), 
-		headPosition(0.0f), headRotation(0.0f), cursorData(0.0f), isCursorDataValid(false) {}
+		headPosition(0.0f), headRotation(0.0f), 
+		cursorData(0.0f), isCursorDataValid(false),
+		cursorDataLeft(0.0f), isCursorDataLeftValid(false),
+		cursorDataRight(0.0f), isCursorDataRightValid(false) {}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -145,16 +152,16 @@ public:
 	inline bool HasScanCompleted() const { return bScanCompleted; }
 
 	// Head Tracking Support
-
 	inline int GetHeadCount() const { return fgFrame->headCount; }
-
 	inline FVector GetHeadPosition() const { return fgFrame->headPosition; }
-
 	inline FRotator GetHeadRotation() const { return fgFrame->headRotation; }
 
 	inline FVector GetCursorData() const { return fgFrame->cursorData; }
-
 	inline bool IsCursorDataValid() const { return fgFrame->isCursorDataValid; }
+	inline FVector GetCursorDataLeft() const { return fgFrame->cursorDataLeft; }
+	inline bool IsCursorDataLeftValid() const { return fgFrame->isCursorDataLeftValid; }
+	inline FVector GetCursorDataRight() const { return fgFrame->cursorDataRight; }
+	inline bool IsCursorDataRightValid() const { return fgFrame->isCursorDataRightValid; }
 
 private:
 	// Core SDK handles
