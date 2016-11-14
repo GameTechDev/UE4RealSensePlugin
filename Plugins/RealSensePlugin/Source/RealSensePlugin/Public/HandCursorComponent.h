@@ -14,6 +14,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGestureCounterClockwiseCircleDelega
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGestureHandClosingDelegate, EBodySideType, BodySide);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGestureHandOpeningDelegate, EBodySideType, BodySide);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFiredAlertDataDelegate, const TArray<TEnumAsByte<EAlertType>> &, AlertData);
+
 
 UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSense) 
 class UHandCursorComponent : public URealSenseComponent
@@ -63,6 +65,9 @@ class UHandCursorComponent : public URealSenseComponent
 	UPROPERTY(BlueprintAssignable, Category = "RealSense")
 		FGestureHandOpeningDelegate OnGestureHandOpening;
 
+	UPROPERTY(BlueprintAssignable, Category = "RealSense")
+		FFiredAlertDataDelegate OnFiredAlertData;
+
 
 	UHandCursorComponent();
 
@@ -70,4 +75,7 @@ class UHandCursorComponent : public URealSenseComponent
 	
 	void TickComponent(float DeltaTime, enum ELevelTick TickType, 
 		               FActorComponentTickFunction *ThisTickFunction) override;
+
+private:
+	TArray<TEnumAsByte<EAlertType>> m_Alerts;
 };

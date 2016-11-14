@@ -70,4 +70,13 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	if (globalRealSenseSession->IsGestureHandOpening()) {
 		OnGestureHandOpening.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideHandOpening()));
 	}
+
+	TArray<int> aAlertData = globalRealSenseSession->GetFiredAlertData();
+	if (aAlertData.Num() > 0) {
+		m_Alerts.Empty();
+		for (int i = 0; i < aAlertData.Num(); ++i) {
+			m_Alerts.Add(TEnumAsByte<EAlertType>(EAlertType(aAlertData[i])));
+		}
+		OnFiredAlertData.Broadcast(m_Alerts);
+	}
 }

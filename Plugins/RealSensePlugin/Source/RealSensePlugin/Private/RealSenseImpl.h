@@ -54,6 +54,7 @@ struct RealSenseDataFrame {
 	PXCCursorData::BodySideType bodySideHandClosing;
 	PXCCursorData::BodySideType bodySideHandOpening;
 
+	TArray<int> firedAlertData;
 
 	RealSenseDataFrame() : number(0), headCount(0), 
 		headPosition(0.0f), headRotation(0.0f), 
@@ -195,6 +196,8 @@ public:
 	inline int GetBodySideCounterClockwiseCircle() const { return fgFrame->bodySideCounterClockwiseCircle; }
 	inline int GetBodySideHandClosing() const { return fgFrame->bodySideHandClosing; }
 	inline int GetBodySideHandOpening() const { return fgFrame->bodySideHandOpening; }
+
+	inline const TArray<int> GetFiredAlertData() const { return fgFrame->firedAlertData; }
 
 private:
 	// Core SDK handles

@@ -260,6 +260,8 @@ void RealSenseImpl::CameraThread()
 			bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
 			bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
 
+			bgFrame->firedAlertData.Empty();
+
 			cursorData->Update();
 
 			int nCursors = cursorData->QueryNumberOfCursors();
@@ -340,6 +342,51 @@ void RealSenseImpl::CameraThread()
 				}
 			}
 
+			int nAlertsNumber = cursorData->QueryFiredAlertsNumber();
+			for (int i = 0; i < nAlertsNumber; ++i) {
+				PXCCursorData::AlertData data;
+				status = cursorData->QueryFiredAlertData(i, data);
+				if (status == pxcStatus::PXC_STATUS_NO_ERROR) {
+					switch (data.label) {
+					case PXCCursorData::AlertType::CURSOR_DETECTED:
+						bgFrame->firedAlertData.Add(1);
+						break;
+					case PXCCursorData::AlertType::CURSOR_NOT_DETECTED:
+						bgFrame->firedAlertData.Add(2);
+						break;
+					case PXCCursorData::AlertType::CURSOR_INSIDE_BORDERS:
+						bgFrame->firedAlertData.Add(3);
+						break;
+					case PXCCursorData::AlertType::CURSOR_OUT_OF_BORDERS:
+						bgFrame->firedAlertData.Add(4);
+						break;
+					case PXCCursorData::AlertType::CURSOR_TOO_CLOSE:
+						bgFrame->firedAlertData.Add(5);
+						break;
+					case PXCCursorData::AlertType::CURSOR_TOO_FAR:
+						bgFrame->firedAlertData.Add(6);
+						break;
+					case PXCCursorData::AlertType::CURSOR_OUT_OF_LEFT_BORDER:
+						bgFrame->firedAlertData.Add(7);
+						break;
+					case PXCCursorData::AlertType::CURSOR_OUT_OF_RIGHT_BORDER:
+						bgFrame->firedAlertData.Add(8);
+						break;
+					case PXCCursorData::AlertType::CURSOR_OUT_OF_TOP_BORDER:
+						bgFrame->firedAlertData.Add(9);
+						break;
+					case PXCCursorData::AlertType::CURSOR_OUT_OF_BOTTOM_BORDER:
+						bgFrame->firedAlertData.Add(10);
+						break;
+					case PXCCursorData::AlertType::CURSOR_ENGAGED:
+						bgFrame->firedAlertData.Add(11);
+						break;
+					case PXCCursorData::AlertType::CURSOR_DISENGAGED:
+						bgFrame->firedAlertData.Add(12);
+						break;
+					}
+				}
+			}
 		}
 
 		senseManager->ReleaseFrame();
@@ -423,8 +470,9 @@ void RealSenseImpl::EnableMiddleware()
 		// Get an instance of PXCCursorConfiguration
 		PXCCursorConfiguration* cursorConfig = pHandCursor->CreateActiveConfiguration();
 		// Make configuration changes and apply them
-		//cursorConfig->EnableEngagement(true);
+		cursorConfig->EnableEngagement(true);
 		cursorConfig->EnableAllGestures();
+		cursorConfig->EnableAllAlerts();
 		cursorConfig->ApplyChanges(); // Changes only take effect when you call ApplyChanges
 	}
 }

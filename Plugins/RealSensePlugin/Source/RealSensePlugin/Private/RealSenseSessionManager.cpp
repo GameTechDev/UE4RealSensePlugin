@@ -341,3 +341,8 @@ int ARealSenseSessionManager::GetBodySideHandOpening() const
 {
 	return impl->GetBodySideHandOpening();
 }
+
+TArray<int> ARealSenseSessionManager::GetFiredAlertData() const
+{
+	return impl->GetFiredAlertData();
+}

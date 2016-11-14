@@ -123,3 +123,20 @@ enum class EBodySideType : uint8 {
 	BODY_SIDE_LEFT = 1 UMETA(DisplayName = "The hand cursor is from a left hand"),
 	BODY_SIDE_RIGHT = 2 UMETA(DisplayName = "The hand cursor is from a right hand"),
 };
+
+// The AlertType enumerator itemizes the alert events
+UENUM(BlueprintType)
+enum class EAlertType : uint8 {
+	CURSOR_DETECTED = 1 UMETA(DisplayName = "A cursor is detected"),
+	CURSOR_NOT_DETECTED = 2 UMETA(DisplayName = "A previous detected cursor is lost"),
+	CURSOR_INSIDE_BORDERS = 3 UMETA(DisplayName = "The cursor is moved back to the tracking area"),
+	CURSOR_OUT_OF_BORDERS = 4 UMETA(DisplayName = "The cursor is moved out of the tracking area"),
+	CURSOR_TOO_CLOSE = 5 UMETA(DisplayName = "The cursor is too close to the camera"),
+	CURSOR_TOO_FAR = 6 UMETA(DisplayName = "The cursor is too far away from the camera"),
+	CURSOR_OUT_OF_LEFT_BORDER = 7 UMETA(DisplayName = "The cursor is touching the left tracking boundary"),
+	CURSOR_OUT_OF_RIGHT_BORDER = 8 UMETA(DisplayName = "The cursor is touching the right tracking boundary"),
+	CURSOR_OUT_OF_TOP_BORDER = 9 UMETA(DisplayName = "The cursor is touching the top tracking boundary"),
+	CURSOR_OUT_OF_BOTTOM_BORDER = 10 UMETA(DisplayName = "The cursor is touching the bottom tracking boundary"),
+	CURSOR_ENGAGED = 11 UMETA(DisplayName = "The cursor is ready to engage with the application"),
+	CURSOR_DISENGAGED = 12 UMETA(DisplayName = "The cursor has left the screen bounds or disengaged"),
+};
