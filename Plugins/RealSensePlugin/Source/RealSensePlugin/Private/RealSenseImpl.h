@@ -42,11 +42,32 @@ struct RealSenseDataFrame {
 	FVector cursorDataRight;
 	bool isCursorDataRightValid;
 
+	bool gestureClick;
+	bool gestureClockwiseCircle;
+	bool gestureCounterClockwiseCircle;
+	bool gestureHandClosing;
+	bool gestureHandOpening;
+
+	PXCCursorData::BodySideType bodySideClick;
+	PXCCursorData::BodySideType bodySideClockwiseCircle;
+	PXCCursorData::BodySideType bodySideCounterClockwiseCircle;
+	PXCCursorData::BodySideType bodySideHandClosing;
+	PXCCursorData::BodySideType bodySideHandOpening;
+
+
 	RealSenseDataFrame() : number(0), headCount(0), 
 		headPosition(0.0f), headRotation(0.0f), 
 		cursorData(0.0f), isCursorDataValid(false),
 		cursorDataLeft(0.0f), isCursorDataLeftValid(false),
-		cursorDataRight(0.0f), isCursorDataRightValid(false) {}
+		cursorDataRight(0.0f), isCursorDataRightValid(false),
+		gestureClick(false), gestureClockwiseCircle(false), gestureCounterClockwiseCircle(false),
+		gestureHandClosing(false), gestureHandOpening(false),
+		bodySideClick(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
+		bodySideClockwiseCircle(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
+		bodySideCounterClockwiseCircle(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
+		bodySideHandClosing(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
+		bodySideHandOpening(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN)
+		{}
 };
 
 // Implements the functionality of the Intel(R) RealSense(TM) SDK and associated
@@ -162,6 +183,18 @@ public:
 	inline bool IsCursorDataLeftValid() const { return fgFrame->isCursorDataLeftValid; }
 	inline FVector GetCursorDataRight() const { return fgFrame->cursorDataRight; }
 	inline bool IsCursorDataRightValid() const { return fgFrame->isCursorDataRightValid; }
+
+	inline bool IsGestureClick() const { return fgFrame->gestureClick; }
+	inline bool IsGestureClockwiseCircle() const { return fgFrame->gestureClockwiseCircle; }
+	inline bool IsGestureCounterClockwiseCircle() const { return fgFrame->gestureCounterClockwiseCircle; }
+	inline bool IsGestureHandClosing() const { return fgFrame->gestureHandClosing; }
+	inline bool IsGestureHandOpening() const { return fgFrame->gestureHandOpening; }
+
+	inline int GetBodySideClick() const { return fgFrame->bodySideClick; }
+	inline int GetBodySideClockwiseCircle() const { return fgFrame->bodySideClockwiseCircle; }
+	inline int GetBodySideCounterClockwiseCircle() const { return fgFrame->bodySideCounterClockwiseCircle; }
+	inline int GetBodySideHandClosing() const { return fgFrame->bodySideHandClosing; }
+	inline int GetBodySideHandOpening() const { return fgFrame->bodySideHandOpening; }
 
 private:
 	// Core SDK handles

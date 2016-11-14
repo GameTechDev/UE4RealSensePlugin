@@ -291,3 +291,53 @@ bool ARealSenseSessionManager::IsCursorDataRightValid() const
 {
 	return impl->IsCursorDataRightValid();
 }
+
+bool ARealSenseSessionManager::IsGestureClick() const
+{
+	return impl->IsGestureClick();
+}
+
+bool ARealSenseSessionManager::IsGestureClockwiseCircle() const
+{
+	return impl->IsGestureClockwiseCircle();
+}
+
+bool ARealSenseSessionManager::IsGestureCounterClockwiseCircle() const
+{
+	return impl->IsGestureCounterClockwiseCircle();
+}
+
+bool ARealSenseSessionManager::IsGestureHandClosing() const
+{
+	return impl->IsGestureHandClosing();
+}
+
+bool ARealSenseSessionManager::IsGestureHandOpening() const
+{
+	return impl->IsGestureHandOpening();
+}
+
+int ARealSenseSessionManager::GetBodySideClick() const
+{
+	return impl->GetBodySideClick();
+}
+
+int ARealSenseSessionManager::GetBodySideClockwiseCircle() const
+{
+	return impl->GetBodySideClockwiseCircle();
+}
+
+int ARealSenseSessionManager::GetBodySideCounterClockwiseCircle() const
+{
+	return impl->GetBodySideCounterClockwiseCircle();
+}
+
+int ARealSenseSessionManager::GetBodySideHandClosing() const
+{
+	return impl->GetBodySideHandClosing();
+}
+
+int ARealSenseSessionManager::GetBodySideHandOpening() const
+{
+	return impl->GetBodySideHandOpening();
+}

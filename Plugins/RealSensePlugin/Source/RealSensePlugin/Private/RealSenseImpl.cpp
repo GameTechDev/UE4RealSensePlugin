@@ -238,6 +238,9 @@ void RealSenseImpl::CameraThread()
 		}
 		
 		if (bHandCursorEnabled) {
+			int BodySideLeftID = 0;
+			int BodySideRightID = 0;
+
 			bgFrame->cursorData = FVector::ZeroVector;
 			bgFrame->isCursorDataValid = false;
 			bgFrame->cursorDataLeft = FVector::ZeroVector;
@@ -245,15 +248,28 @@ void RealSenseImpl::CameraThread()
 			bgFrame->cursorDataRight = FVector::ZeroVector;
 			bgFrame->isCursorDataRightValid = false;
 
+			bgFrame->gestureClick = false;
+			bgFrame->gestureClockwiseCircle = false;
+			bgFrame->gestureCounterClockwiseCircle = false;
+			bgFrame->gestureHandClosing = false;
+			bgFrame->gestureHandOpening = false;
+
+			bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+			bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+			bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+			bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+			bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+
 			cursorData->Update();
+
 			int nCursors = cursorData->QueryNumberOfCursors();
 			nCursors = std::min<int>(nCursors, 2);
 			for (int i = 0; i < nCursors; ++i) {
 				// retrieve the cursor data by order-based index
 				PXCCursorData::ICursor *icursor = nullptr;
 				PXCCursorData::BodySideType bodySide = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-				cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, i, icursor);
-				if (icursor) {
+				status = cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, i, icursor);
+				if ((status == pxcStatus::PXC_STATUS_NO_ERROR) && icursor) {
 					bodySide = icursor->QueryBodySide();
 					PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
 					point.x = (0.5f - point.x) * 2.0f;
@@ -267,13 +283,63 @@ void RealSenseImpl::CameraThread()
 					if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_LEFT) {
 						bgFrame->cursorDataLeft = vec;
 						bgFrame->isCursorDataLeftValid = true;
+						BodySideLeftID = icursor->QueryUniqueId();
 					} 
 					else if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_RIGHT) {
 						bgFrame->cursorDataRight = vec;
 						bgFrame->isCursorDataRightValid = true;
+						BodySideRightID = icursor->QueryUniqueId();
 					}
 				}
 			}
+
+			// poll for gestures
+			PXCCursorData::GestureData gesture;
+			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLICK, gesture)) {
+				bgFrame->gestureClick = true;
+				if (gesture.handId == BodySideLeftID) {
+					bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+				} else if (gesture.handId == BodySideRightID) {
+					bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+				}
+			}
+			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLOCKWISE_CIRCLE, gesture)) {
+				bgFrame->gestureClockwiseCircle = true;
+				if (gesture.handId == BodySideLeftID) {
+					bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+				}
+				else if (gesture.handId == BodySideRightID) {
+					bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+				}
+			}
+			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_COUNTER_CLOCKWISE_CIRCLE, gesture)) {
+				bgFrame->gestureCounterClockwiseCircle = true;
+				if (gesture.handId == BodySideLeftID) {
+					bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+				}
+				else if (gesture.handId == BodySideRightID) {
+					bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+				}
+			}
+			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_CLOSING, gesture)) {
+				bgFrame->gestureHandClosing = true;
+				if (gesture.handId == BodySideLeftID) {
+					bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+				}
+				else if (gesture.handId == BodySideRightID) {
+					bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+				}
+			}
+			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_OPENING, gesture)) {
+				bgFrame->gestureHandOpening = true;
+				if (gesture.handId == BodySideLeftID) {
+					bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+				}
+				else if (gesture.handId == BodySideRightID) {
+					bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+				}
+			}
+
 		}
 
 		senseManager->ReleaseFrame();

@@ -50,4 +50,24 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	if (IsHandCursorDataRightValid) {
 		OnHandCursorDataRight.Broadcast(HandCursorDataRight);
 	}
+
+	if (globalRealSenseSession->IsGestureClick()) {
+		OnGestureClick.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideClick()));
+	}
+
+	if (globalRealSenseSession->IsGestureClockwiseCircle()) {
+		OnGestureClockwiseCircle.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideClockwiseCircle()));
+	}
+
+	if (globalRealSenseSession->IsGestureCounterClockwiseCircle()) {
+		OnGestureCounterClockwiseCircle.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideCounterClockwiseCircle()));
+	}
+
+	if (globalRealSenseSession->IsGestureHandClosing()) {
+		OnGestureHandClosing.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideHandClosing()));
+	}
+
+	if (globalRealSenseSession->IsGestureHandOpening()) {
+		OnGestureHandOpening.Broadcast(EBodySideType(globalRealSenseSession->GetBodySideHandOpening()));
+	}
 }

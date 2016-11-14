@@ -115,3 +115,11 @@ struct FStreamResolution
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ERealSensePixelFormat format;
 };
+
+// The BodySideType enumerator itemizes the side of a hand cursor
+UENUM(BlueprintType)
+enum class EBodySideType : uint8 {
+	BODY_SIDE_UNKNOWN = 0 UMETA(DisplayName = "The body side is unknown"),
+	BODY_SIDE_LEFT = 1 UMETA(DisplayName = "The hand cursor is from a left hand"),
+	BODY_SIDE_RIGHT = 2 UMETA(DisplayName = "The hand cursor is from a right hand"),
+};

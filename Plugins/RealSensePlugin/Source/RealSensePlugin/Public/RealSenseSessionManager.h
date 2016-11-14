@@ -158,12 +158,22 @@ class ARealSenseSessionManager : public AActor
 
 	FVector GetCursorData() const;
 	bool IsCursorDataValid() const;
-
 	FVector GetCursorDataLeft() const;
 	bool IsCursorDataLeftValid() const;
-
 	FVector GetCursorDataRight() const;
 	bool IsCursorDataRightValid() const;
+
+	bool IsGestureClick() const;
+	bool IsGestureClockwiseCircle() const;
+	bool IsGestureCounterClockwiseCircle() const;
+	bool IsGestureHandClosing() const;
+	bool IsGestureHandOpening() const;
+
+	int GetBodySideClick() const;
+	int GetBodySideClockwiseCircle() const;
+	int GetBodySideCounterClockwiseCircle() const;
+	int GetBodySideHandClosing() const;
+	int GetBodySideHandOpening() const;
 
 	ARealSenseSessionManager();
 
