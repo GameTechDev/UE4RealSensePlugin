@@ -75,7 +75,7 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 	if (aAlertData.Num() > 0) {
 		m_Alerts.Empty();
 		for (int i = 0; i < aAlertData.Num(); ++i) {
-			m_Alerts.Add(TEnumAsByte<EAlertType>(EAlertType(aAlertData[i])));
+			m_Alerts.Add(EAlertType(aAlertData[i]));
 		}
 		OnFiredAlertData.Broadcast(m_Alerts);
 	}
