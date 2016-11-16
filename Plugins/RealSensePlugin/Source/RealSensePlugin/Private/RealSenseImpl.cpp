@@ -113,293 +113,303 @@ RealSenseImpl::~RealSenseImpl()
 // Step 4: Swap the background and mid RealSenseDataFrames
 void RealSenseImpl::CameraThread()
 {
-	uint64 currentFrame = 0;
-
-	fgFrame->number = 0;
-	midFrame->number = 0;
-	bgFrame->number = 0;
-
-	pxcStatus status = senseManager->Init();
-	RS_LOG_STATUS(status, "SenseManager Initialized")
-
-	assert(status == PXC_STATUS_NO_ERROR);
-
-	PXCCapture::Device* device = nullptr;
-	PXCCapture::Device::MirrorMode MirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
-	PXCCapture::Device::MirrorMode NewMirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
-	if (bSeg3DEnabled)
-	{
-		// Get pointer to active device
-		device = senseManager->QueryCaptureManager()->QueryDevice();
-		if (device)
-		{
-			// Mirror mode
-			NewMirrorMode = PXCCapture::Device::MIRROR_MODE_HORIZONTAL;
-			MirrorMode = device->QueryMirrorMode();
-			device->SetMirrorMode(NewMirrorMode);
-		}
-	}
-
-	if (bFaceEnabled) {
-		faceData = pFace->CreateOutput();
-	}
-
-	PXCCursorData *cursorData = nullptr;
-	if (bHandCursorEnabled) {
-		cursorData = pHandCursor->CreateOutput();
-	}
-
-
 	while (bCameraThreadRunning == true) {
-		// Acquires new camera frame
-		status = senseManager->AcquireFrame(true);
-		assert(status == PXC_STATUS_NO_ERROR);
+		EnableMiddleware();
 
-		bgFrame->number = ++currentFrame;
+		uint64 currentFrame = 0;
 
-		// Performs Core SDK and middleware processing and store results 
-		// in background RealSenseDataFrame
+		fgFrame->number = 0;
+		midFrame->number = 0;
+		bgFrame->number = 0;
 
+		pxcStatus status = senseManager->Init();
+		if (status != PXC_STATUS_NO_ERROR) {
+			senseManager->Close();
+			continue;
+		}
+
+		PXCCapture::Device* device = nullptr;
+		PXCCapture::Device::MirrorMode MirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
+		PXCCapture::Device::MirrorMode NewMirrorMode = PXCCapture::Device::MIRROR_MODE_DISABLED;
 		if (bSeg3DEnabled)
 		{
-			PXCImage* segmentedImage = p3DSeg->AcquireSegmentedImage();
-			if (segmentedImage)
+			// Get pointer to active device
+			device = senseManager->QueryCaptureManager()->QueryDevice();
+			if (device)
 			{
-				CopySegmentedImageToBuffer(segmentedImage, bgFrame->colorImage, colorResolution.width, colorResolution.height);
-				SAFE_RELEASE(segmentedImage);
-			}
-		}
-
-		else if (bCameraStreamingEnabled) {
-			PXCCapture::Sample* sample = senseManager->QuerySample();
-
-			CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
-			CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
-		}
-
-		if (bScan3DEnabled) {
-			if (bScanStarted) {
-				PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
-				config.startScan = true;
-				p3DScan->SetConfiguration(config);
-				bScanStarted = false;
-			}
-
-			if (bScanStopped) {
-				PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
-				config.startScan = false;
-				p3DScan->SetConfiguration(config);
-				bScanStopped = false;
-			}
-
-			PXCImage* scanImage = p3DScan->AcquirePreviewImage();
-			if (scanImage) {
-				UpdateScan3DImageSize(scanImage->QueryInfo());
-				CopyColorImageToBuffer(scanImage, bgFrame->scanImage, scan3DResolution.width, scan3DResolution.height);
-				scanImage->Release();
-			}
-			
-			if (bReconstructEnabled) {
-				status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
-				bReconstructEnabled = false;
-				bScanCompleted = true;
+				// Mirror mode
+				NewMirrorMode = PXCCapture::Device::MIRROR_MODE_HORIZONTAL;
+				MirrorMode = device->QueryMirrorMode();
+				device->SetMirrorMode(NewMirrorMode);
 			}
 		}
 
 		if (bFaceEnabled) {
-			faceData->Update();
-			bgFrame->headCount = faceData->QueryNumberOfDetectedFaces();
-			if (bgFrame->headCount > 0) {
-				PXCFaceData::Face* face = faceData->QueryFaceByIndex(0);
-				PXCFaceData::PoseData* poseData = face->QueryPose();
-
-				if (poseData) {
-					PXCFaceData::HeadPosition headPosition = {};
-					poseData->QueryHeadPosition(&headPosition);
-					bgFrame->headPosition = FVector(headPosition.headCenter.x, headPosition.headCenter.y, headPosition.headCenter.z);
-
-					PXCFaceData::PoseEulerAngles headRotation = {};
-					poseData->QueryPoseAngles(&headRotation);
-					headRotation.pitch = FMath::Clamp<float>(headRotation.pitch, -90.0f, 90.0f);
-					headRotation.yaw = FMath::Clamp<float>(headRotation.yaw, -90.0f, 90.0f);
-					headRotation.roll = FMath::Clamp<float>(headRotation.roll, -90.0f, 90.0f);
-					if (NewMirrorMode == PXCCapture::Device::MIRROR_MODE_HORIZONTAL) {
-						headRotation.pitch /= -90.0f;
-						headRotation.yaw /= -90.0f;
-						headRotation.roll /= -90.0f;
-					} else {
-						headRotation.pitch /= -90.0f;
-						headRotation.yaw /= 90.0f;
-						headRotation.roll /= -90.0f;
-					}
-					bgFrame->headRotation = FRotator(headRotation.pitch, headRotation.yaw, headRotation.roll);
-				}
-			}
+			faceData = pFace->CreateOutput();
 		}
-		
+
+		PXCCursorData *cursorData = nullptr;
 		if (bHandCursorEnabled) {
-			int BodySideLeftID = 0;
-			int BodySideRightID = 0;
-
-			bgFrame->cursorData = FVector::ZeroVector;
-			bgFrame->isCursorDataValid = false;
-			bgFrame->cursorDataLeft = FVector::ZeroVector;
-			bgFrame->isCursorDataLeftValid = false;
-			bgFrame->cursorDataRight = FVector::ZeroVector;
-			bgFrame->isCursorDataRightValid = false;
-
-			bgFrame->gestureClick = false;
-			bgFrame->gestureClockwiseCircle = false;
-			bgFrame->gestureCounterClockwiseCircle = false;
-			bgFrame->gestureHandClosing = false;
-			bgFrame->gestureHandOpening = false;
-
-			bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-			bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-			bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-			bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-			bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-
-			bgFrame->firedAlertData.Empty();
-
-			cursorData->Update();
-
-			int nCursors = cursorData->QueryNumberOfCursors();
-			nCursors = std::min<int>(nCursors, 2);
-			for (int i = 0; i < nCursors; ++i) {
-				// retrieve the cursor data by order-based index
-				PXCCursorData::ICursor *icursor = nullptr;
-				PXCCursorData::BodySideType bodySide = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
-				status = cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, i, icursor);
-				if ((status == pxcStatus::PXC_STATUS_NO_ERROR) && icursor) {
-					bodySide = icursor->QueryBodySide();
-					PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
-					point.x = (0.5f - point.x) * 2.0f;
-					point.y = (0.5f - point.y) * 2.0f;
-					point.z = (0.5f - point.z) * 2.0f;
-					FVector vec = FVector(point.x, point.y, point.z);
-					if (i == 0) {
-						bgFrame->cursorData = vec;
-						bgFrame->isCursorDataValid = true;
-					}
-					if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_LEFT) {
-						bgFrame->cursorDataLeft = vec;
-						bgFrame->isCursorDataLeftValid = true;
-						BodySideLeftID = icursor->QueryUniqueId();
-					} 
-					else if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_RIGHT) {
-						bgFrame->cursorDataRight = vec;
-						bgFrame->isCursorDataRightValid = true;
-						BodySideRightID = icursor->QueryUniqueId();
-					}
-				}
-			}
-
-			// poll for gestures
-			PXCCursorData::GestureData gesture;
-			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLICK, gesture)) {
-				bgFrame->gestureClick = true;
-				if (gesture.handId == BodySideLeftID) {
-					bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
-				} else if (gesture.handId == BodySideRightID) {
-					bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
-				}
-			}
-			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLOCKWISE_CIRCLE, gesture)) {
-				bgFrame->gestureClockwiseCircle = true;
-				if (gesture.handId == BodySideLeftID) {
-					bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
-				}
-				else if (gesture.handId == BodySideRightID) {
-					bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
-				}
-			}
-			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_COUNTER_CLOCKWISE_CIRCLE, gesture)) {
-				bgFrame->gestureCounterClockwiseCircle = true;
-				if (gesture.handId == BodySideLeftID) {
-					bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
-				}
-				else if (gesture.handId == BodySideRightID) {
-					bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
-				}
-			}
-			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_CLOSING, gesture)) {
-				bgFrame->gestureHandClosing = true;
-				if (gesture.handId == BodySideLeftID) {
-					bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
-				}
-				else if (gesture.handId == BodySideRightID) {
-					bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
-				}
-			}
-			if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_OPENING, gesture)) {
-				bgFrame->gestureHandOpening = true;
-				if (gesture.handId == BodySideLeftID) {
-					bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
-				}
-				else if (gesture.handId == BodySideRightID) {
-					bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
-				}
-			}
-
-			int nAlertsNumber = cursorData->QueryFiredAlertsNumber();
-			for (int i = 0; i < nAlertsNumber; ++i) {
-				PXCCursorData::AlertData data;
-				status = cursorData->QueryFiredAlertData(i, data);
-				if (status == pxcStatus::PXC_STATUS_NO_ERROR) {
-					switch (data.label) {
-					case PXCCursorData::AlertType::CURSOR_DETECTED:
-						bgFrame->firedAlertData.Add(1);
-						break;
-					case PXCCursorData::AlertType::CURSOR_NOT_DETECTED:
-						bgFrame->firedAlertData.Add(2);
-						break;
-					case PXCCursorData::AlertType::CURSOR_INSIDE_BORDERS:
-						bgFrame->firedAlertData.Add(3);
-						break;
-					case PXCCursorData::AlertType::CURSOR_OUT_OF_BORDERS:
-						bgFrame->firedAlertData.Add(4);
-						break;
-					case PXCCursorData::AlertType::CURSOR_TOO_CLOSE:
-						bgFrame->firedAlertData.Add(5);
-						break;
-					case PXCCursorData::AlertType::CURSOR_TOO_FAR:
-						bgFrame->firedAlertData.Add(6);
-						break;
-					case PXCCursorData::AlertType::CURSOR_OUT_OF_LEFT_BORDER:
-						bgFrame->firedAlertData.Add(7);
-						break;
-					case PXCCursorData::AlertType::CURSOR_OUT_OF_RIGHT_BORDER:
-						bgFrame->firedAlertData.Add(8);
-						break;
-					case PXCCursorData::AlertType::CURSOR_OUT_OF_TOP_BORDER:
-						bgFrame->firedAlertData.Add(9);
-						break;
-					case PXCCursorData::AlertType::CURSOR_OUT_OF_BOTTOM_BORDER:
-						bgFrame->firedAlertData.Add(10);
-						break;
-					case PXCCursorData::AlertType::CURSOR_ENGAGED:
-						bgFrame->firedAlertData.Add(11);
-						break;
-					case PXCCursorData::AlertType::CURSOR_DISENGAGED:
-						bgFrame->firedAlertData.Add(12);
-						break;
-					}
-				}
-			}
+			cursorData = pHandCursor->CreateOutput();
 		}
 
-		senseManager->ReleaseFrame();
+		while (bCameraThreadRunning == true) {
+			// Acquires new camera frame
+			status = senseManager->AcquireFrame(true);
+			if (status != PXC_STATUS_NO_ERROR) {
+				break;
+			}
 
-		// Swaps background and mid RealSenseDataFrames
-		std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
-		bgFrame.swap(midFrame);
-	}
+			bgFrame->number = ++currentFrame;
 
-	if (device && bSeg3DEnabled)
-	{
-		// Restore the mirror mode
-		device->SetMirrorMode(MirrorMode);
+			// Performs Core SDK and middleware processing and store results 
+			// in background RealSenseDataFrame
+
+			if (bSeg3DEnabled)
+			{
+				PXCImage* segmentedImage = p3DSeg->AcquireSegmentedImage();
+				if (segmentedImage)
+				{
+					CopySegmentedImageToBuffer(segmentedImage, bgFrame->colorImage, colorResolution.width, colorResolution.height);
+					SAFE_RELEASE(segmentedImage);
+				}
+			}
+
+			else if (bCameraStreamingEnabled) {
+				PXCCapture::Sample* sample = senseManager->QuerySample();
+
+				CopyColorImageToBuffer(sample->color, bgFrame->colorImage, colorResolution.width, colorResolution.height);
+				CopyDepthImageToBuffer(sample->depth, bgFrame->depthImage, depthResolution.width, depthResolution.height);
+			}
+
+			if (bScan3DEnabled) {
+				if (bScanStarted) {
+					PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
+					config.startScan = true;
+					p3DScan->SetConfiguration(config);
+					bScanStarted = false;
+				}
+
+				if (bScanStopped) {
+					PXC3DScan::Configuration config = p3DScan->QueryConfiguration();
+					config.startScan = false;
+					p3DScan->SetConfiguration(config);
+					bScanStopped = false;
+				}
+
+				PXCImage* scanImage = p3DScan->AcquirePreviewImage();
+				if (scanImage) {
+					UpdateScan3DImageSize(scanImage->QueryInfo());
+					CopyColorImageToBuffer(scanImage, bgFrame->scanImage, scan3DResolution.width, scan3DResolution.height);
+					scanImage->Release();
+				}
+
+				if (bReconstructEnabled) {
+					status = p3DScan->Reconstruct(scan3DFileFormat, scan3DFilename.GetCharArray().GetData());
+					bReconstructEnabled = false;
+					bScanCompleted = true;
+				}
+			}
+
+			if (bFaceEnabled) {
+				faceData->Update();
+				bgFrame->headCount = faceData->QueryNumberOfDetectedFaces();
+				if (bgFrame->headCount > 0) {
+					PXCFaceData::Face* face = faceData->QueryFaceByIndex(0);
+					PXCFaceData::PoseData* poseData = face->QueryPose();
+
+					if (poseData) {
+						PXCFaceData::HeadPosition headPosition = {};
+						poseData->QueryHeadPosition(&headPosition);
+						bgFrame->headPosition = FVector(headPosition.headCenter.x, headPosition.headCenter.y, headPosition.headCenter.z);
+
+						PXCFaceData::PoseEulerAngles headRotation = {};
+						poseData->QueryPoseAngles(&headRotation);
+						headRotation.pitch = FMath::Clamp<float>(headRotation.pitch, -90.0f, 90.0f);
+						headRotation.yaw = FMath::Clamp<float>(headRotation.yaw, -90.0f, 90.0f);
+						headRotation.roll = FMath::Clamp<float>(headRotation.roll, -90.0f, 90.0f);
+						if (NewMirrorMode == PXCCapture::Device::MIRROR_MODE_HORIZONTAL) {
+							headRotation.pitch /= -90.0f;
+							headRotation.yaw /= -90.0f;
+							headRotation.roll /= -90.0f;
+						}
+						else {
+							headRotation.pitch /= -90.0f;
+							headRotation.yaw /= 90.0f;
+							headRotation.roll /= -90.0f;
+						}
+						bgFrame->headRotation = FRotator(headRotation.pitch, headRotation.yaw, headRotation.roll);
+					}
+				}
+			}
+
+			if (bHandCursorEnabled) {
+				int BodySideLeftID = 0;
+				int BodySideRightID = 0;
+
+				bgFrame->cursorData = FVector::ZeroVector;
+				bgFrame->isCursorDataValid = false;
+				bgFrame->cursorDataLeft = FVector::ZeroVector;
+				bgFrame->isCursorDataLeftValid = false;
+				bgFrame->cursorDataRight = FVector::ZeroVector;
+				bgFrame->isCursorDataRightValid = false;
+
+				bgFrame->gestureClick = false;
+				bgFrame->gestureClockwiseCircle = false;
+				bgFrame->gestureCounterClockwiseCircle = false;
+				bgFrame->gestureHandClosing = false;
+				bgFrame->gestureHandOpening = false;
+
+				bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+				bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+				bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+				bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+				bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+
+				bgFrame->firedAlertData.Empty();
+
+				cursorData->Update();
+
+				int nCursors = cursorData->QueryNumberOfCursors();
+				nCursors = std::min<int>(nCursors, 2);
+				for (int i = 0; i < nCursors; ++i) {
+					// retrieve the cursor data by order-based index
+					PXCCursorData::ICursor *icursor = nullptr;
+					PXCCursorData::BodySideType bodySide = PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN;
+					status = cursorData->QueryCursorData(PXCCursorData::ACCESS_ORDER_NEAR_TO_FAR, i, icursor);
+					if ((status == pxcStatus::PXC_STATUS_NO_ERROR) && icursor) {
+						bodySide = icursor->QueryBodySide();
+						PXCPoint3DF32 point = icursor->QueryAdaptivePoint();
+						point.x = (0.5f - point.x) * 2.0f;
+						point.y = (0.5f - point.y) * 2.0f;
+						point.z = (0.5f - point.z) * 2.0f;
+						FVector vec = FVector(point.x, point.y, point.z);
+						if (i == 0) {
+							bgFrame->cursorData = vec;
+							bgFrame->isCursorDataValid = true;
+						}
+						if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_LEFT) {
+							bgFrame->cursorDataLeft = vec;
+							bgFrame->isCursorDataLeftValid = true;
+							BodySideLeftID = icursor->QueryUniqueId();
+						}
+						else if (bodySide == PXCCursorData::BodySideType::BODY_SIDE_RIGHT) {
+							bgFrame->cursorDataRight = vec;
+							bgFrame->isCursorDataRightValid = true;
+							BodySideRightID = icursor->QueryUniqueId();
+						}
+					}
+				}
+
+				// poll for gestures
+				PXCCursorData::GestureData gesture;
+				if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLICK, gesture)) {
+					bgFrame->gestureClick = true;
+					if (gesture.handId == BodySideLeftID) {
+						bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+					}
+					else if (gesture.handId == BodySideRightID) {
+						bgFrame->bodySideClick = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+					}
+				}
+				if (cursorData->IsGestureFired(PXCCursorData::CURSOR_CLOCKWISE_CIRCLE, gesture)) {
+					bgFrame->gestureClockwiseCircle = true;
+					if (gesture.handId == BodySideLeftID) {
+						bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+					}
+					else if (gesture.handId == BodySideRightID) {
+						bgFrame->bodySideClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+					}
+				}
+				if (cursorData->IsGestureFired(PXCCursorData::CURSOR_COUNTER_CLOCKWISE_CIRCLE, gesture)) {
+					bgFrame->gestureCounterClockwiseCircle = true;
+					if (gesture.handId == BodySideLeftID) {
+						bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+					}
+					else if (gesture.handId == BodySideRightID) {
+						bgFrame->bodySideCounterClockwiseCircle = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+					}
+				}
+				if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_CLOSING, gesture)) {
+					bgFrame->gestureHandClosing = true;
+					if (gesture.handId == BodySideLeftID) {
+						bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+					}
+					else if (gesture.handId == BodySideRightID) {
+						bgFrame->bodySideHandClosing = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+					}
+				}
+				if (cursorData->IsGestureFired(PXCCursorData::CURSOR_HAND_OPENING, gesture)) {
+					bgFrame->gestureHandOpening = true;
+					if (gesture.handId == BodySideLeftID) {
+						bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_LEFT;
+					}
+					else if (gesture.handId == BodySideRightID) {
+						bgFrame->bodySideHandOpening = PXCCursorData::BodySideType::BODY_SIDE_RIGHT;
+					}
+				}
+
+				int nAlertsNumber = cursorData->QueryFiredAlertsNumber();
+				for (int i = 0; i < nAlertsNumber; ++i) {
+					PXCCursorData::AlertData data;
+					status = cursorData->QueryFiredAlertData(i, data);
+					if (status == pxcStatus::PXC_STATUS_NO_ERROR) {
+						switch (data.label) {
+						case PXCCursorData::AlertType::CURSOR_DETECTED:
+							bgFrame->firedAlertData.Add(1);
+							break;
+						case PXCCursorData::AlertType::CURSOR_NOT_DETECTED:
+							bgFrame->firedAlertData.Add(2);
+							break;
+						case PXCCursorData::AlertType::CURSOR_INSIDE_BORDERS:
+							bgFrame->firedAlertData.Add(3);
+							break;
+						case PXCCursorData::AlertType::CURSOR_OUT_OF_BORDERS:
+							bgFrame->firedAlertData.Add(4);
+							break;
+						case PXCCursorData::AlertType::CURSOR_TOO_CLOSE:
+							bgFrame->firedAlertData.Add(5);
+							break;
+						case PXCCursorData::AlertType::CURSOR_TOO_FAR:
+							bgFrame->firedAlertData.Add(6);
+							break;
+						case PXCCursorData::AlertType::CURSOR_OUT_OF_LEFT_BORDER:
+							bgFrame->firedAlertData.Add(7);
+							break;
+						case PXCCursorData::AlertType::CURSOR_OUT_OF_RIGHT_BORDER:
+							bgFrame->firedAlertData.Add(8);
+							break;
+						case PXCCursorData::AlertType::CURSOR_OUT_OF_TOP_BORDER:
+							bgFrame->firedAlertData.Add(9);
+							break;
+						case PXCCursorData::AlertType::CURSOR_OUT_OF_BOTTOM_BORDER:
+							bgFrame->firedAlertData.Add(10);
+							break;
+						case PXCCursorData::AlertType::CURSOR_ENGAGED:
+							bgFrame->firedAlertData.Add(11);
+							break;
+						case PXCCursorData::AlertType::CURSOR_DISENGAGED:
+							bgFrame->firedAlertData.Add(12);
+							break;
+						}
+					}
+				}
+			}
+
+			senseManager->ReleaseFrame();
+
+			// Swaps background and mid RealSenseDataFrames
+			std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
+			bgFrame.swap(midFrame);
+		}
+
+		if (device && bSeg3DEnabled)
+		{
+			// Restore the mirror mode
+			device->SetMirrorMode(MirrorMode);
+		}
+
+		senseManager->Close();
 	}
 }
 
@@ -407,7 +417,6 @@ void RealSenseImpl::CameraThread()
 void RealSenseImpl::StartCamera() 
 {
 	if (bCameraThreadRunning == false) {
-		EnableMiddleware();
 		bCameraThreadRunning = true;
 		cameraThread = std::thread([this]() { CameraThread(); });
 	}
@@ -422,7 +431,6 @@ void RealSenseImpl::StopCamera()
 		bCameraThreadRunning = false;
 		cameraThread.join();
 	}
-	senseManager->Close();
 }
 
 // Swaps the mid and foreground RealSenseDataFrames.
