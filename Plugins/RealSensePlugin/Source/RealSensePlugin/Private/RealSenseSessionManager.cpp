@@ -346,3 +346,8 @@ TArray<int> ARealSenseSessionManager::GetFiredAlertData() const
 {
 	return impl->GetFiredAlertData();
 }
+
+int ARealSenseSessionManager::GetStatusCode() const
+{
+	return impl->GetStatusCode();
+}

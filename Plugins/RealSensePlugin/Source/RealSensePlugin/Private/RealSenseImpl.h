@@ -56,6 +56,8 @@ struct RealSenseDataFrame {
 
 	TArray<int> firedAlertData;
 
+	int statusCode;
+
 	RealSenseDataFrame() : number(0), headCount(0), 
 		headPosition(0.0f), headRotation(0.0f), 
 		cursorData(0.0f), isCursorDataValid(false),
@@ -67,7 +69,8 @@ struct RealSenseDataFrame {
 		bodySideClockwiseCircle(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
 		bodySideCounterClockwiseCircle(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
 		bodySideHandClosing(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
-		bodySideHandOpening(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN)
+		bodySideHandOpening(PXCCursorData::BodySideType::BODY_SIDE_UNKNOWN),
+		statusCode(0)
 		{}
 };
 
@@ -198,6 +201,10 @@ public:
 	inline int GetBodySideHandOpening() const { return fgFrame->bodySideHandOpening; }
 
 	inline const TArray<int> GetFiredAlertData() const { return fgFrame->firedAlertData; }
+
+	inline int GetStatusCode() const { return fgFrame->statusCode; }
+
+	int StatusCodeSDK(int statusCode);
 
 private:
 	// Core SDK handles

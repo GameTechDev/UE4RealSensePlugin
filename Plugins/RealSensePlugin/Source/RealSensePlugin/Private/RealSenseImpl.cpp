@@ -104,6 +104,92 @@ RealSenseImpl::~RealSenseImpl()
 	}
 }
 
+int RealSenseImpl::StatusCodeSDK(int statusCode) {
+	switch (statusCode) {
+		/* success */
+	case PXC_STATUS_NO_ERROR:
+		return 0;
+
+		/* errors */
+	case PXC_STATUS_FEATURE_UNSUPPORTED:
+		return 1;
+	case PXC_STATUS_PARAM_UNSUPPORTED:
+		return 2;
+	case PXC_STATUS_ITEM_UNAVAILABLE:
+		return 3;
+
+	case PXC_STATUS_HANDLE_INVALID:
+		return 11;
+	case PXC_STATUS_ALLOC_FAILED:
+		return 12;
+
+	case PXC_STATUS_DEVICE_FAILED:
+		return 21;
+	case PXC_STATUS_DEVICE_LOST:
+		return 22;
+	case PXC_STATUS_DEVICE_BUSY:
+		return 23;
+
+	case PXC_STATUS_EXEC_ABORTED:
+		return 31;
+	case PXC_STATUS_EXEC_INPROGRESS:
+		return 32;
+	case PXC_STATUS_EXEC_TIMEOUT:
+		return 33;
+
+	case PXC_STATUS_FILE_WRITE_FAILED:
+		return 41;
+	case PXC_STATUS_FILE_READ_FAILED:
+		return 42;
+	case PXC_STATUS_FILE_CLOSE_FAILED:
+		return 43;
+
+	case PXC_STATUS_DATA_UNAVAILABLE:
+		return 51;
+	case PXC_STATUS_DATA_NOT_INITIALIZED:
+		return 52;
+	case PXC_STATUS_INIT_FAILED:
+		return 53;
+
+	case PXC_STATUS_STREAM_CONFIG_CHANGED:
+		return 61;
+
+	case PXC_STATUS_POWER_UID_ALREADY_REGISTERED:
+		return 71;
+	case PXC_STATUS_POWER_UID_NOT_REGISTERED:
+		return 72;
+	case PXC_STATUS_POWER_ILLEGAL_STATE:
+		return 73;
+	case PXC_STATUS_POWER_PROVIDER_NOT_EXISTS:
+		return 74;
+
+	case PXC_STATUS_CAPTURE_CONFIG_ALREADY_SET:
+		return 81;
+	case PXC_STATUS_COORDINATE_SYSTEM_CONFLICT:
+		return 82;
+	case PXC_STATUS_NOT_MATCHING_CALIBRATION:
+		return 83;
+
+	case PXC_STATUS_ACCELERATION_UNAVAILABLE:
+		return 91;
+
+		/* warnings */
+	case PXC_STATUS_TIME_GAP:
+		return 101;
+	case PXC_STATUS_PARAM_INPLACE:
+		return 102;
+	case PXC_STATUS_DATA_NOT_CHANGED:
+		return 103;
+	case PXC_STATUS_PROCESS_FAILED:
+		return 104;
+	case PXC_STATUS_VALUE_OUT_OF_RANGE:
+		return 105;
+	case PXC_STATUS_DATA_PENDING:
+		return 106;
+	}
+	return 0;
+}
+
 // Camera Processing Thread
 // Initialize the RealSense SenseManager and initiate camera processing loop:
 // Step 1: Acquire new camera frame
@@ -123,8 +209,12 @@ void RealSenseImpl::CameraThread()
 		bgFrame->number = 0;
 
 		pxcStatus status = senseManager->Init();
+		bgFrame->statusCode = StatusCodeSDK(status);
 		if (status != PXC_STATUS_NO_ERROR) {
 			senseManager->Close();
+			// Swaps background and mid RealSenseDataFrames
+			std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
+			bgFrame.swap(midFrame);
 			continue;
 		}
 
@@ -154,13 +244,17 @@ void RealSenseImpl::CameraThread()
 		}
 
 		while (bCameraThreadRunning == true) {
+			bgFrame->number = ++currentFrame;
+
 			// Acquires new camera frame
 			status = senseManager->AcquireFrame(true);
+			bgFrame->statusCode = StatusCodeSDK(status);
 			if (status != PXC_STATUS_NO_ERROR) {
+				// Swaps background and mid RealSenseDataFrames
+				std::unique_lock<std::mutex> lockIntermediate(midFrameMutex);
+				bgFrame.swap(midFrame);
 				break;
 			}
-
-			bgFrame->number = ++currentFrame;
 
 			// Performs Core SDK and middleware processing and store results 
 			// in background RealSenseDataFrame
@@ -447,10 +541,16 @@ void RealSenseImpl::EnableMiddleware()
 	if (bScan3DEnabled) {
 		senseManager->Enable3DScan();
 		p3DScan = std::unique_ptr<PXC3DScan, RealSenseDeleter>(senseManager->Query3DScan());
+
+		// enable CPU / GPU processing
+		p3DScan->QueryInstance<PXCVideoModule>()->SetGPUExec();
 	}
 	if (bFaceEnabled) {
 		senseManager->EnableFace();
 		pFace = std::unique_ptr<PXCFaceModule, RealSenseDeleter>(senseManager->QueryFace());
+
+		// enable CPU / GPU processing
+		pFace->QueryInstance<PXCVideoModule>()->SetGPUExec();
 	}
 	if (bSeg3DEnabled)
 	{
@@ -482,6 +582,9 @@ void RealSenseImpl::EnableMiddleware()
 		cursorConfig->EnableAllGestures();
 		cursorConfig->EnableAllAlerts();
 		cursorConfig->ApplyChanges(); // Changes only take effect when you call ApplyChanges
+
+		// enable CPU / GPU processing
+		pHandCursor->QueryInstance<PXCVideoModule>()->SetGPUExec();
 	}
 }
 

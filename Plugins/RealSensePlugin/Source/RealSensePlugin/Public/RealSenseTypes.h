@@ -140,3 +140,55 @@ enum class EAlertType : uint8 {
 	CURSOR_ENGAGED = 11 UMETA(DisplayName = "The cursor is ready to engage with the application"),
 	CURSOR_DISENGAGED = 12 UMETA(DisplayName = "The cursor has left the screen bounds or disengaged"),
 };
+
+// The Status enumerator itemizes status codes returned by SDK functions
+UENUM(BlueprintType)
+enum class EStatus : uint8 {
+	/* success */
+	PXC_STATUS_NO_ERROR = 0 UMETA(DisplayName = "The operation completed successfully"),
+
+	/* errors */
+	PXC_STATUS_FEATURE_UNSUPPORTED = 1 UMETA(DisplayName = "The requested feature is not available or not implemented"),
+	PXC_STATUS_PARAM_UNSUPPORTED = 2 UMETA(DisplayName = "There are invalid/unsupported parameters in the configuration"),
+	PXC_STATUS_ITEM_UNAVAILABLE = 3 UMETA(DisplayName = "The item could not be found, or end of stream"),
+
+	PXC_STATUS_HANDLE_INVALID = 11 UMETA(DisplayName = "The session/module instance or pointer is invalid"),
+	PXC_STATUS_ALLOC_FAILED = 12 UMETA(DisplayName = "Failed to allocate memory or create an instance of a module or resource"),
+
+	PXC_STATUS_DEVICE_FAILED = 21 UMETA(DisplayName = "Unexpected device failure due to device malfunctioning"),
+	PXC_STATUS_DEVICE_LOST = 22 UMETA(DisplayName = "Unexpected device failure due to the loss of the device"),
+	PXC_STATUS_DEVICE_BUSY = 23 UMETA(DisplayName = "The application does not have control of the device"),
+
+	PXC_STATUS_EXEC_ABORTED = 31 UMETA(DisplayName = "The asynchronous pipeline operation is aborted in upstream components"),
+	PXC_STATUS_EXEC_INPROGRESS = 32 UMETA(DisplayName = "The asynchronous operation is in progress"),
+	PXC_STATUS_EXEC_TIMEOUT = 33 UMETA(DisplayName = "The synchronization function timed out"),
+
+	PXC_STATUS_FILE_WRITE_FAILED = 41 UMETA(DisplayName = "Failed to open a file for write or write to a file"),
+	PXC_STATUS_FILE_READ_FAILED = 42 UMETA(DisplayName = "Failed to open a file for read or read a file"),
+	PXC_STATUS_FILE_CLOSE_FAILED = 43 UMETA(DisplayName = "Failed to close a file handle"),
+
+	PXC_STATUS_DATA_UNAVAILABLE = 51 UMETA(DisplayName = "Data not available for module processing"),
+	PXC_STATUS_DATA_NOT_INITIALIZED = 52 UMETA(DisplayName = "Failed to initialize data"),
+	PXC_STATUS_INIT_FAILED = 53 UMETA(DisplayName = "General failure during algorithm initialization"),
+
+	PXC_STATUS_STREAM_CONFIG_CHANGED = 61 UMETA(DisplayName = "The stream configuration has changed during streaming"),
+
+	PXC_STATUS_POWER_UID_ALREADY_REGISTERED = 71 UMETA(DisplayName = "Double registering the same module identifier"),
+	PXC_STATUS_POWER_UID_NOT_REGISTERED = 72 UMETA(DisplayName = "The module identifier is not registered"),
+	PXC_STATUS_POWER_ILLEGAL_STATE = 73 UMETA(DisplayName = "The operation is not allowed in this state"),
+	PXC_STATUS_POWER_PROVIDER_NOT_EXISTS = 74 UMETA(DisplayName = "The power manager is not available"),
+
+	PXC_STATUS_CAPTURE_CONFIG_ALREADY_SET = 81 UMETA(DisplayName = "The capture configuration has already been set"),
+	PXC_STATUS_COORDINATE_SYSTEM_CONFLICT = 82 UMETA(DisplayName = "Mismatched coordinate system definitions"),
+	PXC_STATUS_NOT_MATCHING_CALIBRATION = 83 UMETA(DisplayName = "The calibration process failed to match the data points"),
+
+	PXC_STATUS_ACCELERATION_UNAVAILABLE = 91 UMETA(DisplayName = "The hardware accelerator required by the algorithm is not available on this platform"),
+
+	/* warnings */
+	PXC_STATUS_TIME_GAP = 101 UMETA(DisplayName = "There is a gap in time stamps"),
+	PXC_STATUS_PARAM_INPLACE = 102 UMETA(DisplayName = "The algorithm is already configured with the same parameters"),
+	PXC_STATUS_DATA_NOT_CHANGED = 103 UMETA(DisplayName = "Data remains the same as no new input is available"),
+	PXC_STATUS_PROCESS_FAILED = 104 UMETA(DisplayName = "General failure in algorithm processing"),
+	PXC_STATUS_VALUE_OUT_OF_RANGE = 105 UMETA(DisplayName = "The data value(s) is out of range"),
+	PXC_STATUS_DATA_PENDING = 106 UMETA(DisplayName = "There is additional data remaining in the algorithm buffer"),
+};

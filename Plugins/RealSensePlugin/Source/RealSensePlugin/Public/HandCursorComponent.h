@@ -16,6 +16,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGestureHandOpeningDelegate, EBodySi
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFiredAlertDataDelegate, const TArray<EAlertType> &, AlertData);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStatusCodeDelegate, EStatus, StatusCode);
+
 
 UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = RealSense) 
 class UHandCursorComponent : public URealSenseComponent
@@ -68,6 +70,11 @@ class UHandCursorComponent : public URealSenseComponent
 	UPROPERTY(BlueprintAssignable, Category = "RealSense")
 		FFiredAlertDataDelegate OnFiredAlertData;
 
+	UPROPERTY(BlueprintReadOnly, Category = "RealSense")
+		EStatus StatusCode;
+
+	UPROPERTY(BlueprintAssignable, Category = "RealSense")
+		FStatusCodeDelegate OnStatusCode;
 
 	UHandCursorComponent();
 

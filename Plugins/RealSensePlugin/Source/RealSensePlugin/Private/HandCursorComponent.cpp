@@ -11,6 +11,7 @@ UHandCursorComponent::UHandCursorComponent(const class FObjectInitializer& ObjIn
 	IsHandCursorDataLeftValid = false;
 	HandCursorDataRight = FVector::ZeroVector;
 	IsHandCursorDataRightValid = false;
+	StatusCode = EStatus::PXC_STATUS_NO_ERROR;
 
 	m_feature = RealSenseFeature::HAND_CURSOR;
 }
@@ -78,5 +79,10 @@ void UHandCursorComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 			m_Alerts.Add(EAlertType(aAlertData[i]));
 		}
 		OnFiredAlertData.Broadcast(m_Alerts);
+	}
+
+	StatusCode = EStatus(globalRealSenseSession->GetStatusCode());
+	if (StatusCode != EStatus::PXC_STATUS_NO_ERROR) {
+		OnStatusCode.Broadcast(StatusCode);
 	}
 }

@@ -175,6 +175,8 @@ class ARealSenseSessionManager : public AActor
 	int GetBodySideHandClosing() const;
 	int GetBodySideHandOpening() const;
 
+	int GetStatusCode() const;
+
 	TArray<int> GetFiredAlertData() const;
 
 	ARealSenseSessionManager();
